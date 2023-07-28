@@ -1,0 +1,15 @@
+@inherits LayoutComponentBase
+@inject DisplayService displayService
+@inject IJSRuntime iJSRuntime
+
+<div class="bg-gray_darkest w-full h-screen">
+    <Presentor Lyric="@displayService.LyricToDisplay">
+
+    </Presentor>
+</div>
+@code {
+    protected override void OnInitialized()
+    {
+        displayService.OnChange += StateHasChanged;
+    }
+}

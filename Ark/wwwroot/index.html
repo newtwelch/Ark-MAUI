@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Ark</title>
+    <base href="/" />
+    <link href="css/output.css" rel="stylesheet" />
+    <link href="Ark.styles.css" rel="stylesheet">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/textfit/2.1.0/textFit.min.js" integrity="sha512-Uyn3ACMPruX6bWtp4wqxwdFAc2wBeFCv8gauaFV3xA6NnDyJwjEUXk4hHMmRQZayEaI/DTRbl5H3PIjyU+LOig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+
+<body>
+
+    <div class="status-bar-safe-area"></div>
+
+    <div id="app">Loading...</div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+
+    <script src="textFit.js"></script>
+    <script>
+        window.resetInnerHTML = (innerString) => {
+            if (document.getElementById("presentor") !== null) {
+                document.getElementById("presentor").classList.remove("opacity-100");
+                document.getElementById("presentor").classList.add("opacity-0");
+                document.getElementById("presentor").innerHTML = innerString;
+                document.getElementById("presentor").removeAttribute("textFitted");
+                document.getElementById("presentor").removeAttribute("style");
+            }
+        }
+
+        function doFit() {
+            textFit(document.getElementById("presentor"));
+            document.getElementById("presentor").classList.remove("opacity-0");
+            document.getElementById("presentor").classList.add("opacity-100");
+        }
+
+        function ScrollToItem(id) {
+            var Type = document.getElementById(id);
+            var selected = Type.getElementsByClassName("bg-primary")[0];
+            selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
+        }
+
+        document.addEventListener('keydown', preventKeyBoardScroll, false);
+
+        function preventKeyBoardScroll(e) {
+            var keys = [32, 33, 34, 35, 37, 38, 39, 40];
+            if (!(document.activeElement.tagName == "INPUT" || document.activeElement.tagName == "TEXTAREA")) {
+                if (keys.includes(e.keyCode)) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+﻿@inject IJSRuntime iJSRuntime
+
+<div class="h-screen w-full bg-gray_darkest xl:pt-0 @Class">
+    <div class="absolute z-30 flex w-full h-full">
+        <button class="w-1/2 h-full" @onclick="Left"></button>
+        <button class="w-1/2 h-full" @onclick="Right"></button>
+    </div>
+
+    <div id="presentor" class="presentor w-full h-full text-white_light whitespace-pre-line">
+        @Lyric
+    </div>
+</div>
+@code {
+    [Parameter] public string Class { get; set; }
+    private string lyric;
+    [Parameter] public string Lyric { get; set; }
+    [Parameter] public EventCallback Next { get; set; }
+    [Parameter] public EventCallback Previous { get; set; }
+
+    private void Right() => Next.InvokeAsync();
+    private void Left() => Previous.InvokeAsync();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(!String.IsNullOrEmpty(Lyric) && Lyric != lyric)
+        {
+            await iJSRuntime.InvokeVoidAsync("resetInnerHTML", Lyric);
+            await iJSRuntime.InvokeVoidAsync("doFit");
+            lyric = Lyric;
+        }
+    }
+}

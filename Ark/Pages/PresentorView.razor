@@ -1,0 +1,15 @@
+﻿@page "/present"
+@inject DisplayService displayService
+@inject IJSRuntime iJSRuntime
+
+<div class="bg-gray_darkest overflow-hidden w-full h-full">
+    <Presentor Lyric="@displayService.LyricToDisplay">
+
+    </Presentor>
+</div>
+@code {
+    protected override void OnInitialized()
+    {
+        displayService.OnChange += StateHasChanged;
+    }
+}

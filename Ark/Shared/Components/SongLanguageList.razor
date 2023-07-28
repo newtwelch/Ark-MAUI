@@ -1,0 +1,68 @@
+﻿@if (Songs.Count > 0)
+{
+    <div id="song" class="h-full flex overflow-x-auto flex-row gap-2 h-full" tabindex="0">
+        <Virtualize Items="Songs" Context="song">
+
+            <div class="hidden">
+                @{
+                    bool isHighlighted = Song?.ID == song?.ID;
+                }
+            </div>
+
+            <div class="p-2 bg-gray h-full w-full flex items-center justify-center select-none text-center whitespace-pre cursor-pointer hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
+            @onclick="async () => { await SelectionChanged(song); }">
+                @song.Language
+            </div>
+        </Virtualize>
+    </div>
+}
+
+
+@code {
+    [Inject] IJSRuntime JS { get; set; }
+    [Parameter] public List<Song> Songs { get; set; }
+    [Parameter] public EventCallback<Song> SelectedSong { get; set; }
+    [Parameter] public EventCallback<Song> DeleteSong { get; set; }
+    [Parameter] public EventCallback<Song> AddToQueue { get; set; }
+
+    [Parameter] public Song Song { get; set; } = new Song();
+
+    private int ItemCount = 0;
+    private int LastIndex = 0;
+
+    private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);
+
+    private async Task SelectionChanged(Song song)
+    {
+        await SelectedSong.InvokeAsync(song);
+        Song = song;
+
+        LastIndex = Songs.FindIndex(s => s.ID == Song.ID);
+
+        await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
+        await ScrollToView("song");//
+    }
+
+    private async void SelectionDelete(Song song) => await DeleteSong.InvokeAsync(song);
+    private async void SelectionAddToQueue(Song song) => await AddToQueue.InvokeAsync(song);
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Songs.Count == ItemCount || ItemCount == 0) return;
+
+        if (ItemCount > Songs.Count)
+            SelectionChanged(Songs[Math.Clamp(LastIndex, 0, Songs.Count - 1)]);
+        else if (ItemCount < Songs.Count)
+            SelectionChanged(Songs[Songs.Count - 1]);
+
+        ItemCount = Songs.Count;
+    }
+
+}

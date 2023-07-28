@@ -1,0 +1,10 @@
+﻿namespace Ark;
+
+public partial class MainPage : ContentPage
+{
+	public MainPage()
+	{
+		InitializeComponent();
+	}
+
+}

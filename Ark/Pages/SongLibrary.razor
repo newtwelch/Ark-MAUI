@@ -1,0 +1,101 @@
+﻿@page "/songlibrary"
+@inject SongService songService
+@inject ToastService toastService
+@inject AppSharedState appSharedState
+@inject DisplayService displayService
+@inject ISessionStorageService sessionStorage
+@inject HotKeys HotKeys
+@implements IDisposable
+
+
+<Modal IsOpen="@showDeleteModal" ModelWidth="Modal.Size.Largest" HeaderClass="text-red" BodyClass="text-white_normal">
+    <Header>
+        [!] SONG LIBRARY [!]
+    </Header>
+    <Body >Are you sure you want to delete <span class="text-red">@songToDelete.Title</span>?</Body>
+    <Footer>
+        <button class="p-2 w-full bg-red text-white_light hover:bg-white_light hover:text-red" @onclick="onSongDelete">Yes!</button>
+        <button class="p-2 w-full bg-gray text-white_normal hover:text-white_light" @onclick="() => showDeleteModal = false">No</button>
+    </Footer>
+</Modal>
+
+<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50 h-screen w-screen absolute transition-opacity font-sans">
+    <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" />
+</div>
+
+<div class="grid h-full gap-4 xl:grid-cols-2 p-2 text-sm xl:text-base @opacity transition-opacity delay-100 xl:delay-0">
+
+    <div class="w-full h-full flex flex-col overflow-auto gap-2">
+
+        <div class="flex @(isEditMode ? "hidden" : "mt-14 xl:mt-0") ">
+            <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "")" spellcheck="false"
+                   placeholder="Search" @bind="@searchText" @bind:event="oninput" @onkeyup="onSearch">
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white @(isEditMode ? "hidden" : "")" @onclick="onSongAdd">S</button>
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white hover:bg-primary @(isEditMode ? "hidden" : "")">L</button>
+        </div>
+
+        <div class="bg-gray w-full h-screen overflow-auto scroll-smooth @(isEditMode ? "hidden" : "")"> 
+            <SongList Songs="@songs" DeleteSong="openDeleteModal" Song="@selectedSong" SelectedSong="onSongSelect">
+            </SongList>
+        </div>
+
+        <div class="flex flex-col mt-20 xl:mt-0 gap-2 h-full w-full z-30 @(isEditMode ? "" : "hidden")">
+
+            <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
+                       placeholder="Sequence" @bind="@selectedSong.Sequence" @bind:event="oninput" @onkeyup="onSearch">
+
+            <textarea class="w-full h-full overflow-auto bg-gray_dark text-white_normal border-0 p-2 focus:ring-0 resize-none )" spellcheck="false"
+                @bind="@selectedSong.RawLyrics" @oninput="(l) => selectedSong.Lyrics = songService.ParseLyrics(l.Value.ToString(), selectedSong.Sequence)">
+            </textarea>
+
+            <input type="text" class="w-full p-2 bg-gray_dark text-white_normal placeholder:text-white_normal placeholder:opacity-25 select-none border-0 focus:ring-0" spellcheck="false"
+                   placeholder="Tags" @bind-value="@selectedSong.Tags" disabled="@isNotEditMode" />
+
+            <input type="text" class="w-full p-2 xl:hidden bg-gray_dark text-white_normal placeholder:text-white_normal placeholder:opacity-25 select-none border-0 focus:ring-0" spellcheck="false"
+                   placeholder="Language" @bind-value="@selectedSong.Language" disabled="@isNotEditMode" />
+
+        </div>
+        
+    </div>
+
+
+    <div class="w-full h-full @(songLyricsHidden ? "hidden xl:flex" : "flex") bg-gray_darkest top-0 left-0 p-2 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
+        <!-- Title, Author and Edit-->
+        <div class="flex w-full">
+            <button class="w-10 mr-2 font-ark  @(isEditMode ? "bg-primary text-white hover:bg-white hover:text-primary" : " bg-gray text-white_normal hover:text-white hover:bg-primary")"
+                @onclick="() => ToggleEdit(false)">
+                @(isEditMode ? "s" : "E")
+            </button>
+
+            <div class="-mb-2 w-full">
+                <div class="bg-gray_dark items-center justify-center w-full">
+                    <input type="text" class="w-full bg-transparent text-center text-2xl text-white_normal text-ellipsis placeholder:text-white_normal placeholder:opacity-25 p-2 select-none border-0 focus:ring-0" spellcheck="false"
+                        placeholder="Title" @bind-value="@selectedSong.Title" disabled="@isNotEditMode" />
+                </div>
+                <input type="text" class="w-full -mt-10 bg-gray_dark mb-2 text-white_normal placeholder:text-white_normal placeholder:opacity-25 select-none text-center border-0 focus:ring-0" spellcheck="false"
+                   placeholder="Author" @bind-value="@selectedSong.Author" disabled="@isNotEditMode" />
+            </div>
+
+            <button class="w-10 ml-2 font-ark text-center @(isEditMode ? "bg-red text-white_light" : "bg-gray text-white_normal xl:hidden hover:opacity-75")"
+                @onclick="async () => { if(isEditMode) await ToggleEdit(true); else onBack(); }">
+                @(isEditMode ? "D" : "b")
+                
+            </button>
+        </div>
+
+        <!-- LYRICS -->
+        <div class="w-full h-full @(isEditMode ? "invisible xl:visible" : "") xl:mb-0 overflow-auto">
+            <LyricList Lyrics="@selectedSong.Lyrics" LyricSelect="onLyricSelect" SelectedLyric="@selectedLyric" CanSelect="@isNotEditMode" />
+        </div>
+        
+        <!-- Languages -->
+        <div class="w-full flex flex-row mb-16 h-14 overflow-auto @(isEditMode ? "hidden" : "") xl:mb-0 overflow-auto">
+            <SongLanguageList Songs="@(songs.Where(s => s.Number == selectedSong.Number).ToList())" SelectedSong="onSongSelect">
+            </SongLanguageList>
+            <button class="w-14 ml-2 bg-gray font-ark text-white_normal hover:text-white @(isEditMode ? "hidden" : "")" @onclick="onSongAdd">+</button>
+        </div>
+
+        <input type="text" class="w-full px-4 py-2 z-40 -mt-10 bg-gray_dark mb-2 text-white_normal placeholder:text-white_normal @(isEditMode ? "hidden xl:block" : "hidden") placeholder:opacity-25 select-none text-center border-0 focus:ring-0" spellcheck="false"
+               placeholder="Language" @bind-value="@selectedSong.Language" disabled="@isNotEditMode" />
+    </div>
+</div>

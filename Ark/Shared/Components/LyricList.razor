@@ -1,7 +1,7 @@
 ﻿@if (Lyrics is null)
 {
     <div class="p-4 w-full text-center select-none text-white_normal whitespace-pre cursor-pointer">
-        <span>[!] No Song is Selected</span>
+        <span>[!] No Lyric Found</span>
     </div>
     return;
 }
@@ -19,8 +19,8 @@
                 <div class="w-full xl:w-10 mr-2 bg-gray grid items-center text-center text-white_normal group-hover:text-white">
                     @lyric.Line
                 </div>
-                <div class="p-4 w-full text-center select-none whitespace-pre cursor-pointer @(isHighlighted ? "bg-primary text-white_light" : "bg-gray_dark text-white_normal hover:text-white_light")">
-                    <span>@lyric.Text</span>
+                <div class="p-4 w-full text-center select-none whitespace-pre cursor-pointer @(isHighlighted ? "bg-primary text-white_light" : "bg-gray_dark text-white_normal group-hover:text-white_light")">
+                    @Lyric(lyric.Text)
                 </div>
             </div>
         </Virtualize>
@@ -42,6 +42,11 @@ else
     [Parameter] public EventCallback<Lyric> LyricSelect { get; set; }
     [Parameter] public Lyric SelectedLyric { get; set; }
     [Parameter] public bool CanSelect { get; set; }
+
+    private RenderFragment Lyric(string lyric) => (builder) =>
+    {
+        builder.AddMarkupContent(0, $"{lyric}");
+    };
 
     protected override void OnParametersSet()
     {
@@ -69,8 +74,8 @@ else
         
         await LyricSelect.InvokeAsync(lyric);
         SelectedLyric = lyric;
-        StateHasChanged();
 
+        await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
         await ScrollToView("lyric");
     }
 

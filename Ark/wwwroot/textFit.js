@@ -37,7 +37,7 @@
     multiLine: true, // if true, textFit will not set white-space: no-wrap
     detectMultiLine: true, // disable to turn off automatic multi-line sensing
     minFontSize: 6,
-    maxFontSize: 300,
+    maxFontSize: 500,
     reProcess: true, // if true, textFit will re-process already-fit nodes. Set to 'false' for better performance
     widthOnly: false, // if true, textFit will fit text to element width, regardless of text height
     alignVertWithFlexbox: false, // if true, textFit will use flexbox for vertical alignment

@@ -1,96 +1,62 @@
-﻿using Newtonsoft.Json;
-using SQLite;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using SQLite;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace Ark.Models
+namespace Ark.Models.Songs
 {
     public class SongService
     {
-        public static readonly string arkAPI = "https://newtwelch.com";
         private static SQLiteAsyncConnection _dbConnection;
 
         public SongService()
         {
             _dbConnection = new SQLiteAsyncConnection(Constants.SongDbPath, Constants.Flags);
             _dbConnection.CreateTableAsync<Song>();
+            _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5 (ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags)");
         }
 
 
         public async Task<List<Song>> GetAllSongs() => await _dbConnection.Table<Song>().ToListAsync();
-        public async Task AddSongAsync(Song song) => await _dbConnection.InsertAsync(song);
-        public async Task UpdateSongAsync(Song song) => await _dbConnection.UpdateAsync(song);
-        public async Task RemoveSongAsync(Song song) => await _dbConnection.DeleteAsync(song);
-
-        #region
-        public async Task<bool> AddUpdateSong(Song song)
+        public async Task AddSongAsync(Song song) 
         {
-            string json = JsonConvert.SerializeObject(song);
-            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            HttpClient client = new HttpClient();
-            HttpResponseMessage responseMessage = new HttpResponseMessage();
-
-            //ADD
-            if (song.ID == 0)
-            {
-                string url = arkAPI + "/addSong";
-                client.BaseAddress = new Uri(url);
-                responseMessage = await client.PostAsync("", content);
-            }
-            //UPDATE
-            else
-            {
-                string url = arkAPI + "/updateSong/" + song.ID;
-                client.BaseAddress = new Uri(url);
-                responseMessage = await client.PutAsync("", content);
-            }
-
-            if (responseMessage.IsSuccessStatusCode)
-                return await Task.FromResult(true);
-            else
-                return await Task.FromResult(false);
+            await _dbConnection.InsertAsync(song);
+        }
+        public async Task UpdateSongAsync(Song song)
+        {
+            await _dbConnection.UpdateAsync(song);
+        }
+        public async Task RemoveSongAsync(Song song)
+        {
+            await _dbConnection.DeleteAsync(song);
         }
 
-        public async Task<bool> DeleteSong(Song song)
+        public async Task<List<Song>> GetSongsFromTitle(string searchTerm)
         {
-            //DELETE
-            HttpClient client = new HttpClient();
-            string url = arkAPI + "/deleteSong/" + song.ID;
-            client.BaseAddress = new Uri(url);
-            HttpResponseMessage responseMessage = await client.DeleteAsync("");
+            var songsFts = new List<SongFts>();
+            var songs = new List<Song>();
+            searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
+            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, highlight(SongFts, 2, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Title, Author, RawLyrics, Sequence, Tags FROM SongFts WHERE Title MATCH '\"{searchTerm}\"*' ORDER BY rank");
 
-            if (responseMessage.IsSuccessStatusCode)
-                return await Task.FromResult(true);
-            else
-                return await Task.FromResult(false);
-
+            songs.AddRange(songsFts);
+            return songs;
         }
 
-        public async Task<Song> GetSong(int id)
+        public async Task<List<Song>> GetSongsFromLyrics(string searchTerm)
         {
-            Song song = new Song();
-            HttpClient client = new HttpClient();
-            string url = arkAPI + "/getSong/" + id;
-            client.BaseAddress = new Uri(url);
-            HttpResponseMessage responseMessage = await client.GetAsync("");
+            var songsFts = new List<SongFts>();
+            var songs = new List<Song>();
+            searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
+            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, Title, Author, highlight(SongFts, 4, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS RawLyrics, Sequence, Tags FROM SongFts WHERE RawLyrics MATCH '\"{searchTerm}\"*' ORDER BY rank");
 
-            if (responseMessage.IsSuccessStatusCode)
-                song = await responseMessage.Content.ReadFromJsonAsync<Song>();
-
-            return await Task.FromResult(song);
+            songs.AddRange(songsFts);
+            return songs;
         }
 
-        public async Task<List<Song>> GetSongs()
+        public async Task<List<Song>> GetSongsFromAPI()
         {
             List<Song> songs = new List<Song>();
             HttpClient client = new HttpClient();
-            string url = arkAPI + "/getSongs";
+            string url = Constants.webAPI + "/getSongs";
             client.BaseAddress = new Uri(url);
             HttpResponseMessage responseMessage = await client.GetAsync("");
 
@@ -99,9 +65,8 @@ namespace Ark.Models
 
             return await Task.FromResult(songs);
         }
-#endregion
 
-        
+
         public List<Lyric> ParseLyrics(string rawlyric, string sequence)
         {
             if (rawlyric is null) return null;
@@ -112,7 +77,7 @@ namespace Ark.Models
             int verseBeforeChorus = 0;
             int verseBeforeChorusCounter = 0;
 
-            string[] paragraphs = Array.FindAll(Regex.Split(rawlyric, "(\r?\n){2,}", RegexOptions.Multiline), p => !String.IsNullOrWhiteSpace(p));
+            string[] paragraphs = Array.FindAll(Regex.Split(rawlyric, "(\r?\n){2,}", RegexOptions.Multiline), p => !string.IsNullOrWhiteSpace(p));
             foreach (string p in paragraphs)
             {
                 if (p.StartsWith("CHORUS", StringComparison.OrdinalIgnoreCase) && Lyrics.Any(x => x.Type == LyricType.Chorus))
@@ -132,7 +97,7 @@ namespace Ark.Models
 
             }
 
-            if (sequence == "o" || String.IsNullOrWhiteSpace(sequence))
+            if (sequence == "o" || string.IsNullOrWhiteSpace(sequence))
             {
                 Lyric chorus = Lyrics.Find(x => x.Type == LyricType.Chorus);
                 int lyricID = 1;
@@ -183,13 +148,13 @@ namespace Ark.Models
                 {
                     int lyricID = 0;
                     Lyric lyric = Lyrics.Find(x => x.Line.ToUpper() == line.ToUpper().Replace("S", ""));
-                        if (lyric is not null)
-                        {
-                            lyric.ID = lyricID++;
-                            SequencedLyrics.Add(newLyric(lyric));
-                        }
+                    if (lyric is not null)
+                    {
+                        lyric.ID = lyricID++;
+                        SequencedLyrics.Add(newLyric(lyric));
                     }
                 }
+            }
 
             return SequencedLyrics;
         }
@@ -215,7 +180,7 @@ namespace Ark.Models
             song.Language = songToCopy.Language;
             song.Tags = songToCopy.Tags;
             song.Number = songToCopy.Number;
-            song.RawLyrics  = songToCopy.RawLyrics;
+            song.RawLyrics = songToCopy.RawLyrics;
             song.Sequence = songToCopy.Sequence;
             song.Lyrics = ParseLyrics(song.RawLyrics, song.Sequence);
 
@@ -226,8 +191,11 @@ namespace Ark.Models
         {
             await _dbConnection.DropTableAsync<Song>();
             await _dbConnection.CreateTableAsync<Song>();
+            await _dbConnection.DropTableAsync<SongFts>();
+            await _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags)");
 
-            await _dbConnection.InsertAllAsync(await GetSongs());
+            await _dbConnection.InsertAllAsync(await GetSongsFromAPI());
+            await _dbConnection.ExecuteAsync("INSERT INTO SongFts(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags) SELECT ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags FROM Song");
 
         }
     }

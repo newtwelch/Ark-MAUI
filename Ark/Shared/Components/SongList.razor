@@ -3,15 +3,18 @@
     <div id="song" class="h-full" tabindex="0" @onkeydown="KeyPress">
         <Virtualize Items="Songs" Context="song">
 
-            <div class="hidden">
+            <div class="hidden text-orange group-hover:text-white_light">
                 @{
                     bool isHighlighted = Song?.ID == song?.ID;
                 }
             </div>
 
-            <div class="p-4 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
+            <div class="p-4 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
             @onclick="async () => { await SelectionChanged(song); }">
-                <p class="w-full truncate text-ellipsis overflow-hidden">@song.Title</p>
+                <div class="w-full flex flex-col ">
+                    <p class="w-full truncate text-ellipsis overflow-hidden">@Title(song)</p>
+                    <p class="w-full truncate text-ellipsis overflow-hidden opacity-75 text-xs">@Secondary(song)</p>
+                </div>
                 <button class="w-10 h-10 font-ark  @(isHighlighted ? "text-white_light hover:text-gray" : "text-white_normal hover:text-primary")"
                         @onclick="() => { SelectionAddToQueue(song); }" @onclick:stopPropagation="true">A</button>
                 <button class="w-10 h-10 font-ark  @(isHighlighted ? "text-white_light" : "text-white_normal") hover:text-red"
@@ -37,15 +40,46 @@ else
 
     [Parameter] public Song Song { get; set; } = new Song();
 
+    private string titleHighlightKept = "";
     private int ItemCount = 0;
     private int LastIndex = 0;
+
+    private RenderFragment Title(Song song) => (builder) =>
+    {
+        builder.AddMarkupContent(0, $"{song.Title}");
+    };
+
+    private RenderFragment Secondary(Song song) => (builder) =>
+    {
+        if (song.RawLyrics.Contains("<span class=\"text-orange group-hover:text-white_light\">"))
+        {
+            string rawLyric = song.RawLyrics.Substring(song.RawLyrics.IndexOf("<span class=\"text-orange group-hover:text-white_light\">", StringComparison.OrdinalIgnoreCase))
+                                                 .Replace("\n", " ").Replace("\r", " ");
+
+            rawLyric = rawLyric.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            rawLyric = rawLyric.Replace("</span>", "");
+            song.LyricHighlighted = rawLyric.Substring(0, Math.Min(rawLyric.Length, 35)) + "...";
+            builder.AddMarkupContent(0, $"<span class=\"text-orange group-hover:text-white_light\">{song.LyricHighlighted}</span></br>");
+        }
+
+        if (song.Author.Contains("Author") || String.IsNullOrWhiteSpace(song.Author)) return;
+        builder.AddMarkupContent(0, $"{song.Author}");
+    };
+
 
     private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);
 
     private async Task SelectionChanged(Song song)
     {
-        await SelectedSong.InvokeAsync(song);
+
+        if (Song.ID != song.ID)
+            Song.Title = titleHighlightKept;
+
+        titleHighlightKept = song.Title;
+
         Song = song;
+
+        await SelectedSong.InvokeAsync(song);
 
         LastIndex = Songs.FindIndex(s => s.ID == Song.ID);
 

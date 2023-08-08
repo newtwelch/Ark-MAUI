@@ -29,7 +29,7 @@
 
         <div class="flex @(isEditMode ? "hidden" : "mt-14 xl:mt-0") ">
             <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "")" spellcheck="false"
-                   placeholder="Search" @bind="@searchText" @bind:event="oninput" @onkeyup="onSearch">
+                   placeholder="Search" @bind-value="@searchText" @bind-value:event="oninput" @onkeyup="onSearch">
             <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white @(isEditMode ? "hidden" : "")" @onclick="onSongAdd">S</button>
             <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white hover:bg-primary @(isEditMode ? "hidden" : "")">L</button>
         </div>
@@ -70,7 +70,7 @@
             <div class="-mb-2 w-full">
                 <div class="bg-gray_dark items-center justify-center w-full">
                     <input type="text" class="w-full bg-transparent text-center text-2xl text-white_normal text-ellipsis placeholder:text-white_normal placeholder:opacity-25 p-2 select-none border-0 focus:ring-0" spellcheck="false"
-                        placeholder="Title" @bind-value="@selectedSong.Title" disabled="@isNotEditMode" />
+                           placeholder="Title" @bind-value="@selectedSong.Title" disabled="@isNotEditMode" />
                 </div>
                 <input type="text" class="w-full -mt-10 bg-gray_dark mb-2 text-white_normal placeholder:text-white_normal placeholder:opacity-25 select-none text-center border-0 focus:ring-0" spellcheck="false"
                    placeholder="Author" @bind-value="@selectedSong.Author" disabled="@isNotEditMode" />

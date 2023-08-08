@@ -4,6 +4,7 @@ using Ark.Models.Toast;
 using Blazored.SessionStorage;
 using Microsoft.Maui.LifecycleEvents;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
+using Ark.Models.Songs;
 
 namespace Ark;
 

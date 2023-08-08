@@ -2,10 +2,12 @@
 @inject DisplayService displayService
 @inject IJSRuntime iJSRuntime
 
-<div class="bg-gray_darkest w-full h-screen">
-    <Presentor Lyric="@displayService.LyricToDisplay">
+<div class="bg-gray_darkest w-screen h-screen">
+    <div class="w-full overflow-hidden h-full relative">
+        <Presentor Lyric="@displayService.LyricToDisplay">
 
-    </Presentor>
+        </Presentor>
+    </div>
 </div>
 @code {
     protected override void OnInitialized()

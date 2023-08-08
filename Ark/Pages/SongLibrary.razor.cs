@@ -17,6 +17,7 @@ using Ark.Models.Toast;
 using System.Diagnostics;
 using Blazored.SessionStorage;
 using Toolbelt.Blazor.HotKeys2;
+using Ark.Models.Songs;
 
 namespace Ark.Pages
 {
@@ -24,7 +25,6 @@ namespace Ark.Pages
     {
         private List<Song> songs = new List<Song>();
         private List<Song> songQueue = new List<Song>();
-        private IQueryable<Song> songQuery;
 
         private Song songToDelete = new Song();
         private Song selectedSong = new Song();
@@ -47,7 +47,6 @@ namespace Ark.Pages
         {
             //Initial
             songs = await songService.GetAllSongs();
-            songQuery = songs.AsQueryable();
 
             //Events
             appSharedState.BackButtonPressed += onBack;
@@ -59,7 +58,7 @@ namespace Ark.Pages
             isEditMode = await sessionStorage.GetItemAsync<bool>("editMode");
 
             if (sessionSong is not null) selectedSong = sessionSong;
-            if (!String.IsNullOrEmpty(searchText)) searchSongs();
+            if (!String.IsNullOrEmpty(searchText)) await searchSongs();
             if (selectedSong.ID != 0) songLyricsHidden = await sessionStorage.GetItemAsync<bool>("lyricHidden");
             
             //TODO: session storage the raw lyrics as well
@@ -72,18 +71,19 @@ namespace Ark.Pages
                 opacity = "opacity-100";
         }
 
-        private void onSearch(KeyboardEventArgs e) => searchSongs();
+        private async Task onSearch(KeyboardEventArgs e) => await searchSongs();
         
-        private void searchSongs()
+        
+        private async Task searchSongs()
         {
             if (searchText is null) return;
 
-            if (searchText.StartsWith("."))
-                songs = songQuery.AsParallel().AsOrdered().Where(x => x.RawLyrics.Contains(searchText.Substring(1), StringComparison.OrdinalIgnoreCase)).ToList();
-            else if (String.IsNullOrEmpty(searchText))
-                songs = songQuery.ToList();
+            if (searchText == "")
+                songs = await songService.GetAllSongs();
+            else if (searchText.StartsWith("."))
+                songs = await songService.GetSongsFromLyrics(searchText.Substring(1));
             else
-                songs = songQuery.AsParallel().AsOrdered().Where(x => x.Title.Contains(searchText, StringComparison.OrdinalIgnoreCase)).ToList();
+                songs = await songService.GetSongsFromTitle(searchText);
         }
 
         // SELECT
@@ -91,13 +91,18 @@ namespace Ark.Pages
         {
             selectedSong = _selectedSong;
             selectedSong.Lyrics = songService.ParseLyrics(selectedSong.RawLyrics, selectedSong.Sequence);
+            selectedSong.Title = selectedSong.Title.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            selectedSong.Title = selectedSong.Title.Replace("</span>", "");
             songBackUp = songService.newSong(_selectedSong);
             songLyricsHidden = false;
+            StateHasChanged();
         }
 
         Window secondWindow = new Window() { Page = new DisplayPage()};
         private void onLyricSelect(Lyric _selectedLyric)
         {
+            _selectedLyric.Text = _selectedLyric.Text.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            _selectedLyric.Text = _selectedLyric.Text.Replace("</span>", "");
             //deviceOrientationService.SetDeviceOrientation(DisplayOrientation.Landscape);
             deviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
 #if ANDROID
@@ -186,7 +191,6 @@ namespace Ark.Pages
             toastService.ShowToast($"Added a new song to the list", "SongLibrary", ToastLevel.Info);
             await songService.AddSongAsync(newSong);
             songs = await songService.GetAllSongs();
-            songQuery = songs.AsQueryable();
         }
 
         // UPDATE

@@ -11,7 +11,6 @@ public partial class DisplayPage : ContentPage
 	{
 		InitializeComponent();
 #if WINDOWS
-        this.Loaded += (s, e) => { OnToggleFullscreenClicked(s, e); };
         
 #endif
     }

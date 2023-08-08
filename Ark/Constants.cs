@@ -10,7 +10,6 @@ namespace Ark
     public static class Constants
     {
         public const string SongDatabase = "Songs.db";
-
         public const SQLiteOpenFlags Flags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.SharedCache;
 
         public static string SongDbPath
@@ -21,5 +20,15 @@ namespace Ark
                 return FileSystem.AppDataDirectory + SongDatabase;
             }
         }
+
+        public static string SongIndexPath
+        {
+            get
+            {
+                var basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return Path.Combine(basePath, "songIndex");
+            }
+        }
+        public static string webAPI = "https://ark.welchengine.com";
     }
 }

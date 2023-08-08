@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Ark.Models
+namespace Ark.Models.Songs
 {
     public class Lyric
     {

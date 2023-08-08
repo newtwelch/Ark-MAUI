@@ -9,7 +9,7 @@
                 }
             </div>
 
-            <div class="p-2 bg-gray h-full w-full flex items-center justify-center select-none text-center whitespace-pre cursor-pointer hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
+            <div class="py-2 px-4 bg-gray h-full w-full flex items-center justify-center select-none text-center whitespace-pre cursor-pointer hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
             @onclick="async () => { await SelectionChanged(song); }">
                 @song.Language
             </div>

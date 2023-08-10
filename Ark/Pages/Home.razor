@@ -1,16 +1,113 @@
 ﻿@page "/"
 @inject SongService songService
 @inject ToastService toastService
+@inject SettingsService settingsService
 
-<button class="w-16 ml-2 bg-gray text-white_normal hover:text-white" @onclick="onSync">Sync From Cloud</button>
-<div class="w-16 h-16 font-ark animate-spin text-white_normal @(hidden ? "hidden" : "")">H</div>
+<div class="w-full grid xl:grid-cols-2 space-y-10 relative p-4 text-white_normal">
+
+    @if (settingsService.DeveloperMode())
+    {
+        <p class="absolute top-0 left-0 text-sm w-full bg-gray mb-4 p-2 text-white_light">
+            Developer Mode Engaged! <br/>
+            <span class="font-bold text-orange">PLEASE USE DEV API FOR COMPATIBILITY</span>
+        </p>
+    }
+
+    <div class="p-6 bg-gray_dark">
+
+        <h2 class="text-2xl font-bold text-white_light mb-6">General Settings</h2>
+
+        <div class="ml-4 flex flex-col gap-6">
+            <div class="grid grid-cols-2 items-center">
+                <div>
+                    <label>Sync From Cloud</label>
+                    <svg class="w-8 h-8 font-ark animate-spin fill-white_normal @(hidden ? "hidden" : "")" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" /></svg>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button class="w-fit py-2 px-4 bg-gray text-sm hover:text-white hover:bg-white_light hover:bg-opacity-10 @(settingsService.DeveloperMode() ? "hidden" : "")" @onclick="() => onSync(false)">Ark API</button>
+                    <button class="w-fit py-2 px-4 bg-gray text-sm hover:text-white hover:bg-white_light hover:bg-opacity-10" @onclick="() => onSync(true)">Dev API</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 items-center">
+                <div>
+                    <label>Database Clean Up</label>
+                    <svg class="w-8 h-8 font-ark animate-spin fill-white_normal @(hidden ? "hidden" : "")" xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 512 512"><path d="M304 48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zm0 416a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM48 304a48 48 0 1 0 0-96 48 48 0 1 0 0 96zm464-48a48 48 0 1 0 -96 0 48 48 0 1 0 96 0zM142.9 437A48 48 0 1 0 75 369.1 48 48 0 1 0 142.9 437zm0-294.2A48 48 0 1 0 75 75a48 48 0 1 0 67.9 67.9zM369.1 437A48 48 0 1 0 437 369.1 48 48 0 1 0 369.1 437z" /></svg>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button class="w-fit py-2 px-4 bg-gray text-sm text-normal hover:bg-red hover:text-white_light">Clean Up</button>
+                </div>
+            </div>
+
+
+            <div class="grid grid-cols-2 items-center">
+                <div>
+                    <label>Developer Mode</label>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <input type="text" class="bg-gray_darkest py-2 px-4 text-white_light border-0 focus:ring-0 @(settingsService.DeveloperMode() ? "hidden" : "")" spellcheck="false"
+                           placeholder="Developer Key" value="@developerPassword" @onchange="(password) => settingsService.DevPass = password.Value.ToString()">
+                    <button class="py-2 px-4 text-white_normal @(settingsService.DeveloperMode() ? "bg-opacity-0 text-green" : " bg-gray hover:bg-white_light hover:bg-opacity-10 text-sm hover:text-white_light")" @onclick="() => settingsService.DeveloperMode()">
+                        @(settingsService.DeveloperMode() ? "Verified" : "Verify")
+                    </button>
+                </div>
+            </div>
+
+            @if (showMonitorSetting)
+            {
+            <div class="grid grid-cols-2 items-center">
+                <div>
+                        <label>Monitor to show Projection</label>
+                </div>
+                <div class="flex items-center justify-end gap-2">
+                    <select id="monitorCount" value="@deviceName" @onchange="@((ChangeEventArgs e) => { settingsService.ChosenMonitor = e.Value.ToString(); })"
+                            class="w-fit py-2 pr-14 pl-4 bg-gray_darkest border-0 focus:ring-0 text-white_normal">
+                        @foreach (var monitor in monitorList)
+                        {
+                            <option value="@monitor.Item1">@monitor.Item2.Replace("\\\\.\\", "").Replace("DISPLAY", "DISPLAY ").Trim()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            }
+
+        </div>
+
+    </div>
+
+    <span class="hidden text-red text-primary text-orange text-green bg-primary bg-red bg-orange bg-green group-hover:text-white_light"></span>
+</div>
+
 
 @code {
     private bool hidden = true;
-    private async Task onSync()
+    private bool showMonitorSetting = false;
+    private string developerPassword = "";
+
+    private List<Tuple<string, string>> monitorList = new List<Tuple<string, string>>();
+
+    private string deviceName = "";
+    protected override async Task OnInitializedAsync()
+    {
+    #if WINDOWS
+    await Task.Run(() => {
+        showMonitorSetting = true;
+        deviceName = settingsService.ChosenMonitor;
+        foreach(var monitor in Monitor.All.ToList())
+        {
+            var monitorTuple = new Tuple<string, string>(monitor.DeviceName, monitor.IsPrimary ? "PRIMARY" : monitor.DeviceName );
+            monitorList.Add(monitorTuple);
+        }
+        });    
+    #endif
+    }
+
+    private async Task onSync(bool devWebAPI)
     {
         hidden = false;
-        await songService.SyncFromWebAPI();
+            await songService.SyncFromWebAPI(devWebAPI);
+
         hidden = true;
     }
+
 }

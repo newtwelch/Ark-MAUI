@@ -38,14 +38,14 @@
         }
 
         function doFit() {
-            textFit(document.getElementById("presentor"), {maxFontSize: 70});
+            textFit(document.getElementById("presentor"), { maxFontSize: 85 });
             document.getElementById("presentor").classList.remove("opacity-0");
             document.getElementById("presentor").classList.add("opacity-100");
         }
 
         function ScrollToItem(id) {
             var Type = document.getElementById(id);
-            var selected = Type.getElementsByClassName("bg-primary")[0];
+            var selected = Type.getElementsByClassName("highlighted")[0];
             selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
         }
 

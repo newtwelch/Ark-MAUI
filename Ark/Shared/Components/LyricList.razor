@@ -1,6 +1,6 @@
 ﻿@if (Lyrics is null)
 {
-    <div class="p-4 w-full text-center select-none text-white_normal whitespace-pre cursor-pointer">
+    <div class="p-4 w-full text-center bg-gray_dark select-none text-white_normal whitespace-pre cursor-pointer">
         <span>[!] No Lyric Found</span>
     </div>
     return;
@@ -16,10 +16,10 @@
             </div>
 
             <div class="xl:flex group" @onclick="async () => { await SelectionChanged(lyric); }">
-                <div class="w-full xl:w-10 mr-2 bg-gray grid items-center text-center text-white_normal group-hover:text-white">
+                <div class="w-full xl:w-10 mr-2 hidden xl:grid xl:bg-gray items-center text-center text-white_normal group-hover:text-white">
                     @lyric.Line
                 </div>
-                <div class="p-4 w-full text-center select-none whitespace-pre cursor-pointer @(isHighlighted ? "bg-primary text-white_light" : "bg-gray_dark text-white_normal group-hover:text-white_light")">
+                <div class="p-4 w-full text-center select-none whitespace-pre cursor-pointer @(isHighlighted ? "highlighted bg-primary text-white_light" : "bg-gray_dark text-white_normal group-hover:text-white_light")">
                     @Lyric(lyric.Text)
                 </div>
             </div>
@@ -29,7 +29,7 @@
 else
 {
     <div class="bg-gray w-full items-center text-white_normal p-4">
-        Loading...
+        There are no Lyrics
     </div>
 }
 

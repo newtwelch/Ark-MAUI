@@ -46,6 +46,9 @@
     user-drag: none;
 }
 
+.presentor {
+}
+
 *:focus {
     outline: none;
 }
@@ -53,18 +56,20 @@
 /* VERTICAL */
 /* width */
 ::-webkit-scrollbar:vertical {
-    width: 20px;
+    width: 10px;
 }
 
 /* Track */
 ::-webkit-scrollbar-track:vertical {
     background: #1C1E23;
-    border-left: 10px solid #16191C;
+    -webkit-box-shadow: inset 0 0 5px transparent;
+    border-left: 5px solid #16191C;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb:vertical {
-    border-left: 10px solid #16191C;
+    border-left: 5px solid #16191C;
+    -webkit-box-shadow: inset 0 0 5px transparent;
     background: #34383E;
 }
 

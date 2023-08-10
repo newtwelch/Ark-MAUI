@@ -61,19 +61,12 @@ namespace Ark.Pages
             if (!String.IsNullOrEmpty(searchText)) await searchSongs();
             if (selectedSong.ID != 0) songLyricsHidden = await sessionStorage.GetItemAsync<bool>("lyricHidden");
             
-            //TODO: session storage the raw lyrics as well
         }
 
-
-        protected override void OnAfterRender(bool firstRender)
-        {
-            if (firstRender)
-                opacity = "opacity-100";
-        }
-
+        protected override void OnAfterRender(bool firstRender) { if (firstRender) opacity = "opacity-100"; }
+        
         private async Task onSearch(KeyboardEventArgs e) => await searchSongs();
-        
-        
+
         private async Task searchSongs()
         {
             if (searchText is null) return;
@@ -82,6 +75,10 @@ namespace Ark.Pages
                 songs = await songService.GetAllSongs();
             else if (searchText.StartsWith("."))
                 songs = await songService.GetSongsFromLyrics(searchText.Substring(1));
+            else if (searchText.StartsWith("*"))
+                songs = await songService.GetSongsFromAuthors(searchText.Substring(1));
+            else if (searchText.StartsWith("#"))
+                songs = await songService.GetSongsFromTags(searchText.Substring(1));
             else
                 songs = await songService.GetSongsFromTitle(searchText);
         }
@@ -93,26 +90,32 @@ namespace Ark.Pages
             selectedSong.Lyrics = songService.ParseLyrics(selectedSong.RawLyrics, selectedSong.Sequence);
             selectedSong.Title = selectedSong.Title.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             selectedSong.Title = selectedSong.Title.Replace("</span>", "");
+            selectedSong.Tags = selectedSong.Tags.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            selectedSong.Tags = selectedSong.Tags.Replace("</span>", "");
+            selectedSong.Author = selectedSong.Author.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            selectedSong.Author = selectedSong.Author.Replace("</span>", "");
+            selectedSong.RawLyrics = selectedSong.RawLyrics.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            selectedSong.RawLyrics = selectedSong.RawLyrics.Replace("</span>", "");
             songBackUp = songService.newSong(_selectedSong);
             songLyricsHidden = false;
             StateHasChanged();
         }
 
-        Window secondWindow = new Window() { Page = new DisplayPage()};
         private void onLyricSelect(Lyric _selectedLyric)
         {
             _selectedLyric.Text = _selectedLyric.Text.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             _selectedLyric.Text = _selectedLyric.Text.Replace("</span>", "");
-            //deviceOrientationService.SetDeviceOrientation(DisplayOrientation.Landscape);
+
             deviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
+            
 #if ANDROID
             showPresentor = true;
 #endif
 #if WINDOWS
-            if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(secondWindow))
+            if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(songService.secondWindow))
             {
-                Application.Current.OpenWindow(secondWindow);
-                //TODO: Don't lose focus
+                songService.secondWindow.Page = new DisplayPage(settingsService);
+                Application.Current.OpenWindow(songService.secondWindow);
             }
 #endif
             displayService.LyricToDisplay = _selectedLyric.Text;
@@ -145,8 +148,8 @@ namespace Ark.Pages
         private void onBack()
         {
 #if WINDOWS
-            if (Application.Current.Windows.Contains(secondWindow))
-                Application.Current.CloseWindow(secondWindow);
+            if (Application.Current.Windows.Contains(songService.secondWindow))
+                Application.Current.CloseWindow(songService.secondWindow);
 
 #endif
             //TODO: QUIT App if already true
@@ -156,10 +159,11 @@ namespace Ark.Pages
                 showPresentor = false;
                 selectedLyric = emptyLyric;
             }
-            else if(isNotEditMode)
+            else if (isNotEditMode)
             {
                 songLyricsHidden = true;
             }
+
             StateHasChanged();
         }
 
@@ -178,19 +182,33 @@ namespace Ark.Pages
         //================================
 
         // ADD
-        private async Task onSongAdd()
+        private async Task onSongAdd(bool isALanguage)
         {
             songs = await songService.GetAllSongs();
+
             Song newSong = new Song();
             newSong.Title = "Title";
             newSong.Author = "Author";
             newSong.Sequence = "o";
             newSong.RawLyrics = "Sample verse";
             newSong.Language = "DEFAULT";
-            newSong.Number = songs.Max(s => s.Number) + 1;
-            toastService.ShowToast($"Added a new song to the list", "SongLibrary", ToastLevel.Info);
+            newSong.Number = isALanguage ? selectedSong.Number : (await songService.GetAllSongs()).Max(s => s.Number) + 1;
+
+            if (isALanguage)
+                toastService.ShowToast($"Added language for {selectedSong.Title}", "Language", ToastLevel.Success);
+            else
+                toastService.ShowToast($"Added a new song to the library", "New Song", ToastLevel.Success);
+
+            if (settingsService.DeveloperMode())
+                await songService.AddUpdateSong(newSong);
+            
             await songService.AddSongAsync(newSong);
+            
+
             songs = await songService.GetAllSongs();
+
+            selectedSong = newSong;
+            await ToggleEdit(false);
         }
 
         // UPDATE
@@ -198,27 +216,54 @@ namespace Ark.Pages
         {
             isEditMode = !isEditMode;
 
-            if (!(isEditMode == false) || selectedSong.ID == 0)
+            if (selectedSong.ID == 0 || selectedSong is null)
+            {
+                toastService.ShowToast($"No song selected", "[!] Error [!]", ToastLevel.Error);
+                isEditMode = false;
                 return;
+            }
+
             if (discardChanges)
                 selectedSong = songService.newSong(songBackUp);
             else
+            {
+                if (settingsService.DeveloperMode())
+                    await songService.AddUpdateSong(selectedSong);
+                
                 await songService.UpdateSongAsync(selectedSong);
-            songs = await songService.GetAllSongs();
+            }
+            StateHasChanged();
+
+            if(String.IsNullOrWhiteSpace(searchText) && !discardChanges)
+                songs = await songService.GetAllSongs();
+            else
+                await searchSongs();
         }
 
         private void openDeleteModal(Song _songToDelete)
         {
             showDeleteModal = true;
+            _songToDelete.Title = _songToDelete.Title.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            _songToDelete.Title = _songToDelete.Title.Replace("</span>", "");
             songToDelete = _songToDelete;
         }
 
         // DELETE
         private async Task onSongDelete()
         {
-            toastService.ShowToast($"{songToDelete.Title} was deleted", "SongLibrary", ToastLevel.Info);
+            toastService.ShowToast($"{songToDelete.Title} was removed from the library", "Delete", ToastLevel.Info);
+
+            if (settingsService.DeveloperMode())
+                await songService.DeleteSong(songToDelete);
+            
             await songService.RemoveSongAsync(songToDelete);
-            songs = await songService.GetAllSongs();
+
+            if (String.IsNullOrWhiteSpace(searchText))
+                songs = await songService.GetAllSongs();
+            else
+                await searchSongs();
+
+            selectedSong = new Song();
             showDeleteModal = false;
         }
 

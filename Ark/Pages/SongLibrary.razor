@@ -2,11 +2,11 @@
 @inject SongService songService
 @inject ToastService toastService
 @inject AppSharedState appSharedState
+@inject SettingsService settingsService
 @inject DisplayService displayService
 @inject ISessionStorageService sessionStorage
 @inject HotKeys HotKeys
 @implements IDisposable
-
 
 <Modal IsOpen="@showDeleteModal" ModelWidth="Modal.Size.Largest" HeaderClass="text-red" BodyClass="text-white_normal">
     <Header>
@@ -19,32 +19,38 @@
     </Footer>
 </Modal>
 
-<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50 h-screen w-screen absolute transition-opacity font-sans">
+<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50 bg-gray_darkest h-screen w-screen absolute transition-opacity font-sans">
     <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" />
 </div>
 
-<div class="grid h-full gap-4 xl:grid-cols-2 p-2 text-sm xl:text-base @opacity transition-opacity delay-100 xl:delay-0">
+<div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm xl:text-base @opacity duration-500 transition-opacity">
 
     <div class="w-full h-full flex flex-col overflow-auto gap-2">
 
         <div class="flex @(isEditMode ? "hidden" : "mt-14 xl:mt-0") ">
-            <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "")" spellcheck="false"
-                   placeholder="Search" @bind-value="@searchText" @bind-value:event="oninput" @onkeyup="onSearch">
-            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white @(isEditMode ? "hidden" : "")" @onclick="onSongAdd">S</button>
-            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white hover:bg-primary @(isEditMode ? "hidden" : "")">L</button>
+            <div class="relative w-full">
+                <button class="absolute inset-y-0 right-0 p-4 flex items-center @(String.IsNullOrWhiteSpace(searchText) ? "hidden" : "")" @onclick="async () =>{ searchText = string.Empty; await searchSongs(); }">
+                    <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
+                </button>
+                <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "")" spellcheck="false"
+                       placeholder="Search" @bind-value="@searchText" @bind-value:event="oninput" @onkeyup="onSearch" />
+            </div>
+            
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "")" @onclick="async () => { await onSongAdd(false); }">S</button>
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-primary @(isEditMode ? "hidden" : "")">L</button>
         </div>
 
-        <div class="bg-gray w-full h-screen overflow-auto scroll-smooth @(isEditMode ? "hidden" : "")"> 
+        <div class="bg-gray w-full h-screen overflow-auto  scroll-smooth @(isEditMode ? "hidden" : "")">
             <SongList Songs="@songs" DeleteSong="openDeleteModal" Song="@selectedSong" SelectedSong="onSongSelect">
             </SongList>
         </div>
 
-        <div class="flex flex-col mt-20 xl:mt-0 gap-2 h-full w-full z-30 @(isEditMode ? "" : "hidden")">
+        <div class="flex flex-col mt-[86px] xl:mt-0 gap-2 h-full w-full z-30 @(isEditMode ? "" : "hidden")">
 
             <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
-                       placeholder="Sequence" @bind="@selectedSong.Sequence" @bind:event="oninput" @onkeyup="onSearch">
+                   placeholder="Sequence" @bind="@selectedSong.Sequence" @oninput="(s) => selectedSong.Lyrics = songService.ParseLyrics(selectedSong.RawLyrics, s.Value.ToString())">
 
-            <textarea class="w-full h-full overflow-auto bg-gray_dark text-white_normal border-0 p-2 focus:ring-0 resize-none )" spellcheck="false"
+            <textarea class="w-full h-full overflow-auto bg-gray_dark text-white_normal border-0 p-2 focus:ring-0 resize-none " spellcheck="false"
                 @bind="@selectedSong.RawLyrics" @oninput="(l) => selectedSong.Lyrics = songService.ParseLyrics(l.Value.ToString(), selectedSong.Sequence)">
             </textarea>
 
@@ -59,10 +65,10 @@
     </div>
 
 
-    <div class="w-full h-full @(songLyricsHidden ? "hidden xl:flex" : "flex") bg-gray_darkest top-0 left-0 p-2 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
+    <div class="w-full h-full @(songLyricsHidden ? "hidden xl:flex" : "flex") bg-gray_darkest top-0 left-0 p-4 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
         <!-- Title, Author and Edit-->
         <div class="flex w-full">
-            <button class="w-10 mr-2 font-ark  @(isEditMode ? "bg-primary text-white hover:bg-white hover:text-primary" : " bg-gray text-white_normal hover:text-white hover:bg-primary")"
+            <button class="w-10 mr-2 font-ark  @(isEditMode ? "bg-primary text-white_light hover:bg-white hover:text-primary" : " bg-gray text-white_normal hover:text-white_light hover:bg-primary")"
                 @onclick="() => ToggleEdit(false)">
                 @(isEditMode ? "s" : "E")
             </button>
@@ -84,18 +90,18 @@
         </div>
 
         <!-- LYRICS -->
-        <div class="w-full h-full @(isEditMode ? "invisible xl:visible" : "") xl:mb-0 overflow-auto">
+        <div class="w-full h-full @(isEditMode ? "invisible xl:visible xl:mb-10" : "")  overflow-auto scroll-smooth">
             <LyricList Lyrics="@selectedSong.Lyrics" LyricSelect="onLyricSelect" SelectedLyric="@selectedLyric" CanSelect="@isNotEditMode" />
         </div>
         
         <!-- Languages -->
         <div class="w-full flex flex-row mb-16 h-14 overflow-auto @(isEditMode ? "hidden" : "") xl:mb-0 overflow-auto">
-            <SongLanguageList Songs="@(songs.Where(s => s.Number == selectedSong.Number).ToList())" SelectedSong="onSongSelect">
+            <SongLanguageList Songs="@(songs.Where(s => s.Number == selectedSong.Number).ToList())" SelectedSong="onSongSelect" Song="selectedSong">
             </SongLanguageList>
-            <button class="w-14 ml-2 bg-gray font-ark text-white_normal hover:text-white @(isEditMode ? "hidden" : "")" @onclick="onSongAdd">+</button>
+            <button class="w-14 font-bold text-2xl bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "")" @onclick=" async () => { await onSongAdd(true); }">+</button>
         </div>
 
-        <input type="text" class="w-full px-4 py-2 z-40 -mt-10 bg-gray_dark mb-2 text-white_normal placeholder:text-white_normal @(isEditMode ? "hidden xl:block" : "hidden") placeholder:opacity-25 select-none text-center border-0 focus:ring-0" spellcheck="false"
+        <input type="text" class="w-full px-4 py-2 z-40 -mt-10 bg-gray_dark text-white_normal border-0 placeholder:text-white_normal @(isEditMode ? "hidden xl:block" : "hidden") placeholder:opacity-25 select-none text-center focus:ring-0" spellcheck="false"
                placeholder="Language" @bind-value="@selectedSong.Language" disabled="@isNotEditMode" />
     </div>
 </div>

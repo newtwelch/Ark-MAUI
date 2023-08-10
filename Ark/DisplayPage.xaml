@@ -2,9 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:Ark"
-             x:Class="Ark.DisplayPage"
-             Title="Display" 
-             NavigationPage.HasNavigationBar="False">
+             x:Class="Ark.DisplayPage" Shell.NavBarIsVisible="False">
     
     <BlazorWebView x:Name="blazorWebView" HostPage="wwwroot/index.html">
         <BlazorWebView.RootComponents>

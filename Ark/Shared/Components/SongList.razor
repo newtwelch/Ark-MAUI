@@ -3,15 +3,15 @@
     <div id="song" class="h-full" tabindex="0" @onkeydown="KeyPress">
         <Virtualize Items="Songs" Context="song">
 
-            <div class="hidden text-orange group-hover:text-white_light">
+            <div class="hidden">
                 @{
                     bool isHighlighted = Song?.ID == song?.ID;
                 }
             </div>
 
-            <div class="p-4 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
+            <div class="p-4 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "highlighted bg-primary text-white highlighted" : "text-white_normal")"
             @onclick="async () => { await SelectionChanged(song); }">
-                <div class="w-full flex flex-col ">
+                <div class="w-full overflow-hidden flex flex-col">
                     <p class="w-full truncate text-ellipsis overflow-hidden">@Title(song)</p>
                     <p class="w-full truncate text-ellipsis overflow-hidden opacity-75 text-xs">@Secondary(song)</p>
                 </div>
@@ -41,6 +41,9 @@ else
     [Parameter] public Song Song { get; set; } = new Song();
 
     private string titleHighlightKept = "";
+    private string tagHighlightKept = "";
+    private string authorHighlightKept = "";
+    private string rawLyricsHighlightKept = "";
     private int ItemCount = 0;
     private int LastIndex = 0;
 
@@ -58,8 +61,15 @@ else
 
             rawLyric = rawLyric.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             rawLyric = rawLyric.Replace("</span>", "");
-            song.LyricHighlighted = rawLyric.Substring(0, Math.Min(rawLyric.Length, 35)) + "...";
+            song.LyricHighlighted = rawLyric.Substring(0, Math.Min(rawLyric.Length, 50)) + "...";
             builder.AddMarkupContent(0, $"<span class=\"text-orange group-hover:text-white_light\">{song.LyricHighlighted}</span></br>");
+        }
+
+        if (song.Tags.Contains("<span class=\"text-orange group-hover:text-white_light\">"))
+        {
+            string tag = song.Tags.Substring(song.Tags.IndexOf("<span class=\"text-orange group-hover:text-white_light\">", StringComparison.OrdinalIgnoreCase))
+                                                 .Replace("\n", " ").Replace("\r", " ");
+            builder.AddMarkupContent(0, $"{song.Tags}</br>");
         }
 
         if (song.Author.Contains("Author") || String.IsNullOrWhiteSpace(song.Author)) return;
@@ -71,11 +81,16 @@ else
 
     private async Task SelectionChanged(Song song)
     {
-
-        if (Song.ID != song.ID)
+        if (Song.ID != song.ID){
             Song.Title = titleHighlightKept;
-
+            Song.Tags = tagHighlightKept;
+            Song.Author = authorHighlightKept;
+            Song.RawLyrics = rawLyricsHighlightKept;
+        }
+        tagHighlightKept = song.Tags;
         titleHighlightKept = song.Title;
+        authorHighlightKept = song.Author;
+        rawLyricsHighlightKept = song.RawLyrics;
 
         Song = song;
 

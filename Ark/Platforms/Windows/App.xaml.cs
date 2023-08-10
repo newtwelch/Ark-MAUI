@@ -1,4 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
+using Windows.ApplicationModel.Core;
 using Windows.UI.ViewManagement;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -21,5 +22,6 @@ public partial class App : MauiWinUIApplication
 	}
 
 	protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
+
 }
 

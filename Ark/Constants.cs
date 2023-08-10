@@ -21,14 +21,6 @@ namespace Ark
             }
         }
 
-        public static string SongIndexPath
-        {
-            get
-            {
-                var basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return Path.Combine(basePath, "songIndex");
-            }
-        }
         public static string webAPI = "https://ark.welchengine.com";
     }
 }

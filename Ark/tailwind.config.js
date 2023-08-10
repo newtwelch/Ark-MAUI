@@ -23,5 +23,9 @@ module.exports = {
     future: {
         hoverOnlyWhenSupported: true,
     },
+    plugins: [
+        // add this line
+        require('@tailwindcss/forms'),
+    ],
 }
 

@@ -898,6 +898,18 @@ select {
   top: 1rem;
 }
 
+.-top-10 {
+  top: -2.5rem;
+}
+
+.-bottom-10 {
+  bottom: -2.5rem;
+}
+
+.-left-4 {
+  left: -1rem;
+}
+
 .z-20 {
   z-index: 20;
 }
@@ -1019,6 +1031,10 @@ select {
   height: 3.5rem;
 }
 
+.h-2 {
+  height: 0.5rem;
+}
+
 .h-24 {
   height: 6rem;
 }
@@ -1081,6 +1097,10 @@ select {
 
 .w-16 {
   width: 4rem;
+}
+
+.w-2 {
+  width: 0.5rem;
 }
 
 .w-4 {
@@ -1235,12 +1255,6 @@ select {
   --tw-space-x-reverse: 0;
   margin-right: calc(1rem * var(--tw-space-x-reverse));
   margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
-}
-
-.space-y-10 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(2.5rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(2.5rem * var(--tw-space-y-reverse));
 }
 
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
@@ -1436,6 +1450,10 @@ select {
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+.pb-\[72px\] {
+  padding-bottom: 72px;
 }
 
 .pl-4 {
@@ -1927,12 +1945,24 @@ input[type=checkbox]:checked:after {
 }
 
 @media (min-width: 768px) {
+  .md\:ml-4 {
+    margin-left: 1rem;
+  }
+
+  .md\:flex {
+    display: flex;
+  }
+
   .md\:max-w-4xl {
     max-width: 56rem;
   }
 
   .md\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .md\:justify-end {
+    justify-content: flex-end;
   }
 
   .md\:p-6 {
@@ -2042,6 +2072,10 @@ input[type=checkbox]:checked:after {
 
   .xl\:p-0 {
     padding: 0px;
+  }
+
+  .xl\:pb-4 {
+    padding-bottom: 1rem;
   }
 
   .xl\:pt-0 {

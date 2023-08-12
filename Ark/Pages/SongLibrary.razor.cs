@@ -46,7 +46,7 @@ namespace Ark.Pages
         protected override async Task OnInitializedAsync()
         {
             //Initial
-            songs = await songService.GetAllSongs();
+            songs = await songService.GetAllSongsAsync();
 
             //Events
             appSharedState.BackButtonPressed += onBack;
@@ -72,15 +72,15 @@ namespace Ark.Pages
             if (searchText is null) return;
 
             if (searchText == "")
-                songs = await songService.GetAllSongs();
+                songs = await songService.GetAllSongsAsync();
             else if (searchText.StartsWith("."))
-                songs = await songService.GetSongsFromLyrics(searchText.Substring(1));
+                songs = await songService.GetSongsFromLyricsAsync(searchText.Substring(1));
             else if (searchText.StartsWith("*"))
-                songs = await songService.GetSongsFromAuthors(searchText.Substring(1));
+                songs = await songService.GetSongsFromAuthorsAsync(searchText.Substring(1));
             else if (searchText.StartsWith("#"))
-                songs = await songService.GetSongsFromTags(searchText.Substring(1));
+                songs = await songService.GetSongsFromTagsAsync(searchText.Substring(1));
             else
-                songs = await songService.GetSongsFromTitle(searchText);
+                songs = await songService.GetSongsFromTitleAsync(searchText);
         }
 
         // SELECT
@@ -184,7 +184,7 @@ namespace Ark.Pages
         // ADD
         private async Task onSongAdd(bool isALanguage)
         {
-            songs = await songService.GetAllSongs();
+            songs = await songService.GetAllSongsAsync();
 
             Song newSong = new Song();
             newSong.Title = "Title";
@@ -192,7 +192,7 @@ namespace Ark.Pages
             newSong.Sequence = "o";
             newSong.RawLyrics = "Sample verse";
             newSong.Language = "DEFAULT";
-            newSong.Number = isALanguage ? selectedSong.Number : (await songService.GetAllSongs()).Max(s => s.Number) + 1;
+            newSong.Number = isALanguage ? selectedSong.Number : (await songService.GetAllSongsAsync()).Max(s => s.Number) + 1;
 
             if (isALanguage)
                 toastService.ShowToast($"Added language for {selectedSong.Title}", "Language", ToastLevel.Success);
@@ -200,12 +200,12 @@ namespace Ark.Pages
                 toastService.ShowToast($"Added a new song to the library", "New Song", ToastLevel.Success);
 
             if (settingsService.DeveloperMode())
-                await songService.AddUpdateSong(newSong);
+                await songService.AddUpdateApiSongAsync(newSong);
             
             await songService.AddSongAsync(newSong);
             
             
-            songs = await songService.GetAllSongs();
+            songs = await songService.GetAllSongsAsync();
 
             selectedSong = newSong;
             onSongSelect(selectedSong);
@@ -229,14 +229,14 @@ namespace Ark.Pages
             else
             {
                 if (settingsService.DeveloperMode())
-                    await songService.AddUpdateSong(selectedSong);
+                    await songService.AddUpdateApiSongAsync(selectedSong);
                 
                 await songService.UpdateSongAsync(selectedSong);
             }
             StateHasChanged();
 
             if(String.IsNullOrWhiteSpace(searchText) && !discardChanges)
-                songs = await songService.GetAllSongs();
+                songs = await songService.GetAllSongsAsync();
             else
                 await searchSongs();
         }
@@ -255,27 +255,17 @@ namespace Ark.Pages
             toastService.ShowToast($"{songToDelete.Title} was removed from the library", "Delete", ToastLevel.Info);
 
             if (settingsService.DeveloperMode())
-                await songService.DeleteSong(songToDelete);
+                await songService.RemoveApiSongAsync(songToDelete);
             
             await songService.RemoveSongAsync(songToDelete);
 
             if (String.IsNullOrWhiteSpace(searchText))
-                songs = await songService.GetAllSongs();
+                songs = await songService.GetAllSongsAsync();
             else
                 await searchSongs();
             
             selectedSong = new Song();
             showDeleteModal = false;
         }
-
-#if WINDOWS
-        private Microsoft.UI.Windowing.AppWindow GetAppWindow(MauiWinUIWindow window)
-        {
-            var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
-            var id = Microsoft.UI.Win32Interop.GetWindowIdFromWindow(handle);
-            var appWindow = Microsoft.UI.Windowing.AppWindow.GetFromWindowId(id);
-            return appWindow;
-        }
-#endif
     }
 }

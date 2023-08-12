@@ -10,6 +10,7 @@ namespace Ark
     public static class Constants
     {
         public const string SongDatabase = "Songs.db";
+        public const string BibleDatabase = "Bible.db";
         public const SQLiteOpenFlags Flags = SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.SharedCache;
 
         public static string SongDbPath
@@ -17,7 +18,15 @@ namespace Ark
             get
             {
                 var basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                return FileSystem.AppDataDirectory + SongDatabase;
+                return basePath + SongDatabase;
+            }
+        }
+        public static string BibleDbPath
+        {
+            get
+            {
+                var basePath = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return basePath + BibleDatabase;
             }
         }
 

@@ -22,7 +22,7 @@ namespace Ark.Models.Songs
         }
 
 
-        public async Task<List<Song>> GetAllSongs() => await _dbConnection.Table<Song>().ToListAsync();
+        public async Task<List<Song>> GetAllSongsAsync() => await _dbConnection.Table<Song>().ToListAsync();
         public async Task AddSongAsync(Song song) 
         {
             await _dbConnection.InsertAsync(song);
@@ -42,7 +42,7 @@ namespace Ark.Models.Songs
 
         }
 
-        public async Task<List<Song>> GetSongsFromTitle(string searchTerm)
+        public async Task<List<Song>> GetSongsFromTitleAsync(string searchTerm)
         {
             var songsFts = new List<SongFts>();
             var songs = new List<Song>();
@@ -52,8 +52,7 @@ namespace Ark.Models.Songs
             songs.AddRange(songsFts);
             return songs;
         }
-
-        public async Task<List<Song>> GetSongsFromAuthors(string searchTerm)
+        public async Task<List<Song>> GetSongsFromAuthorsAsync(string searchTerm)
         {
             var songsFts = new List<SongFts>();
             var songs = new List<Song>();
@@ -63,8 +62,7 @@ namespace Ark.Models.Songs
             songs.AddRange(songsFts);
             return songs;
         }
-        
-        public async Task<List<Song>> GetSongsFromLyrics(string searchTerm)
+        public async Task<List<Song>> GetSongsFromLyricsAsync(string searchTerm)
         {
             var songsFts = new List<SongFts>();
             var songs = new List<Song>();
@@ -74,7 +72,7 @@ namespace Ark.Models.Songs
             songs.AddRange(songsFts);
             return songs;
         }
-        public async Task<List<Song>> GetSongsFromTags(string searchTerm)
+        public async Task<List<Song>> GetSongsFromTagsAsync(string searchTerm)
         {
             var songsFts = new List<SongFts>();
             var songs = new List<Song>();
@@ -85,7 +83,7 @@ namespace Ark.Models.Songs
             return songs;
         }
 
-        public async Task<List<Song>> GetSongsFromAPI(bool devWebAPI)
+        public async Task<List<Song>> GetSongsFromApiAsync(bool devWebAPI)
         {
             List<Song> songs = new List<Song>();
             HttpClient client = new HttpClient();
@@ -99,7 +97,7 @@ namespace Ark.Models.Songs
             return await Task.FromResult(songs);
         }
 
-        public async Task<bool> AddUpdateSong(Song song)
+        public async Task<bool> AddUpdateApiSongAsync(Song song)
         {
             string json = JsonConvert.SerializeObject(song);
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -128,7 +126,7 @@ namespace Ark.Models.Songs
                 return await Task.FromResult(false);
         }
 
-        public async Task<bool> DeleteSong(Song song)
+        public async Task<bool> RemoveApiSongAsync(Song song)
         {
             //DELETE
             HttpClient client = new HttpClient();
@@ -263,14 +261,14 @@ namespace Ark.Models.Songs
             return song;
         }
 
-        public async Task SyncFromWebAPI(bool devWebAPI)
+        public async Task SyncFromWebApiAsync(bool devWebAPI)
         {
             await _dbConnection.DropTableAsync<Song>(); 
             await _dbConnection.DropTableAsync<SongFts>();
             await _dbConnection.ExecuteAsync("VACUUM");
             await _dbConnection.CreateTableAsync<Song>();
             await _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags)");
-            await _dbConnection.InsertAllAsync(await GetSongsFromAPI(devWebAPI));
+            await _dbConnection.InsertAllAsync(await GetSongsFromApiAsync(devWebAPI));
             await _dbConnection.ExecuteAsync("INSERT INTO SongFts(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags) SELECT ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags FROM Song");
 
         }

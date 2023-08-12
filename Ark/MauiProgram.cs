@@ -5,6 +5,7 @@ using Blazored.SessionStorage;
 using Microsoft.Maui.LifecycleEvents;
 using Toolbelt.Blazor.Extensions.DependencyInjection;
 using Ark.Models.Songs;
+using Ark.Models.Bible;
 #if WINDOWS
 using System.Runtime.InteropServices;
     using Microsoft.UI;
@@ -79,6 +80,7 @@ public static class MauiProgram
         builder.Services.AddMauiBlazorWebView(); 
 		builder.Services.AddHotKeys2();
         builder.Services.AddSingleton<SongService>(); 
+        builder.Services.AddSingleton<BibleService>(); 
 #if DEBUG
         builder.Services.AddBlazorWebViewDeveloperTools();
 		builder.Logging.AddDebug();

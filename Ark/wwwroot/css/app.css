@@ -46,7 +46,9 @@
     user-drag: none;
 }
 
-.presentor {
+input[type=checkbox]:checked:after {
+    content: " ";
+    background: #000;
 }
 
 *:focus {

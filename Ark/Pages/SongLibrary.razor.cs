@@ -36,7 +36,7 @@ namespace Ark.Pages
         private bool showDeleteModal = false;
         private bool isEditMode;
         private bool isNotEditMode { get => !isEditMode; }
-        private bool songLyricsHidden = true;
+        private bool songDataHidden = true;
         private bool showPresentor = false;
 
         private string opacity = "opacity-0";
@@ -59,7 +59,7 @@ namespace Ark.Pages
 
             if (sessionSong is not null) selectedSong = sessionSong;
             if (!String.IsNullOrEmpty(searchText)) await searchSongs();
-            if (selectedSong.ID != 0) songLyricsHidden = await sessionStorage.GetItemAsync<bool>("lyricHidden");
+            if (selectedSong.ID != 0) songDataHidden = await sessionStorage.GetItemAsync<bool>("lyricHidden");
             
         }
 
@@ -97,7 +97,7 @@ namespace Ark.Pages
             selectedSong.RawLyrics = selectedSong.RawLyrics.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             selectedSong.RawLyrics = selectedSong.RawLyrics.Replace("</span>", "");
             songBackUp = songService.newSong(_selectedSong);
-            songLyricsHidden = false;
+            songDataHidden = false;
             StateHasChanged();
         }
 
@@ -161,7 +161,7 @@ namespace Ark.Pages
             }
             else if (isNotEditMode)
             {
-                songLyricsHidden = true;
+                songDataHidden = true;
             }
 
             StateHasChanged();
@@ -170,7 +170,7 @@ namespace Ark.Pages
         public async void Dispose()
         {
             await sessionStorage.SetItemAsync<bool>("editMode", isEditMode);
-            await sessionStorage.SetItemAsync<bool>("lyricHidden", songLyricsHidden);
+            await sessionStorage.SetItemAsync<bool>("lyricHidden", songDataHidden);
             await sessionStorage.SetItemAsync<string>("searchText", searchText);
             await sessionStorage.SetItemAsync<Song>("selectedSong", selectedSong);
             this.HotKeysContext.Dispose();
@@ -204,10 +204,11 @@ namespace Ark.Pages
             
             await songService.AddSongAsync(newSong);
             
-
+            
             songs = await songService.GetAllSongs();
 
             selectedSong = newSong;
+            onSongSelect(selectedSong);
             await ToggleEdit(false);
         }
 
@@ -262,7 +263,7 @@ namespace Ark.Pages
                 songs = await songService.GetAllSongs();
             else
                 await searchSongs();
-
+            
             selectedSong = new Song();
             showDeleteModal = false;
         }

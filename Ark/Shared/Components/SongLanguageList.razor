@@ -53,14 +53,14 @@
         }
     }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (Songs.Count == ItemCount || ItemCount == 0) return;
 
         if (ItemCount > Songs.Count)
-            SelectionChanged(Songs[Math.Clamp(LastIndex, 0, Songs.Count - 1)]);
+            await SelectionChanged(Songs[Math.Clamp(LastIndex, 0, Songs.Count - 1)]);
         else if (ItemCount < Songs.Count)
-            SelectionChanged(Songs[Songs.Count - 1]);
+            await SelectionChanged(Songs[Songs.Count - 1]);
 
         ItemCount = Songs.Count;
     }

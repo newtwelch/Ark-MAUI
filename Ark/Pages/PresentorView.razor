@@ -1,8 +1,9 @@
 ﻿@page "/present"
 @inject DisplayService displayService
 @inject IJSRuntime iJSRuntime
+@inject SettingsService settingsService
 
-<div class="bg-gray_darkest relative w-full h-screen">
+<div class="@(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") relative w-full h-screen">
     <Presentor Lyric="@displayService.LyricToDisplay">
 
     </Presentor>

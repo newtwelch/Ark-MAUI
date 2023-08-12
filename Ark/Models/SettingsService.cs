@@ -28,13 +28,16 @@ namespace Ark.Models
             return isMatch;
         }
 
-
         // Use true black background on Projector    : TRUE
+        private bool trueBlackBackground;
+        public bool TrueBlackBackground
+        {
+            get { return trueBlackBackground; }
+            set { trueBlackBackground = value; }
+        }
+
         // ( Mobile ) Auto landscape                 : TRUE
         // 
 
-
-        public event Action OnChange;
-        private void NotifyDataChanged() => OnChange?.Invoke();
     }
 }

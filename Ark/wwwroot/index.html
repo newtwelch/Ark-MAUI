@@ -28,19 +28,19 @@
     <script src="textFit.js"></script>
     <script>
         window.resetInnerHTML = (innerString) => {
-            if (document.getElementById("presentor") !== null) {
-                document.getElementById("presentor").classList.remove("opacity-100");
-                document.getElementById("presentor").classList.add("opacity-0");
-                document.getElementById("presentor").innerHTML = innerString;
-                document.getElementById("presentor").removeAttribute("textFitted");
-                document.getElementById("presentor").removeAttribute("style");
+            if (document.getElementById("lyricPresentor") !== null) {
+                document.getElementById("lyricPresentor").classList.remove("opacity-100");
+                document.getElementById("lyricPresentor").classList.add("opacity-0");
+                document.getElementById("lyricPresentor").innerHTML = innerString;
+                document.getElementById("lyricPresentor").removeAttribute("textFitted");
+                document.getElementById("lyricPresentor").removeAttribute("style");
             }
         }
 
         function doFit() {
-            textFit(document.getElementById("presentor"), { maxFontSize: 85 });
-            document.getElementById("presentor").classList.remove("opacity-0");
-            document.getElementById("presentor").classList.add("opacity-100");
+            textFit(document.getElementById("lyricPresentor"), { maxFontSize: 85 });
+            document.getElementById("lyricPresentor").classList.remove("opacity-0");
+            document.getElementById("lyricPresentor").classList.add("opacity-100");
         }
 
         function ScrollToItem(id) {

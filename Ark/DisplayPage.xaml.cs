@@ -14,9 +14,10 @@ namespace Ark;
 
 public partial class DisplayPage : ContentPage
 {
-    private SettingsService settingsService;
 
 #if WINDOWS
+    private SettingsService settingsService;
+
 	public DisplayPage(SettingsService _settingsService)
 	{
 		InitializeComponent();

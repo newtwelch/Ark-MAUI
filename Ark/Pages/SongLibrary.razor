@@ -19,7 +19,7 @@
     </Footer>
 </Modal>
 
-<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50 bg-gray_darkest h-screen w-screen absolute transition-opacity font-sans">
+<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50  @(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") h-screen w-screen absolute transition-opacity font-sans">
     <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" />
 </div>
 
@@ -65,7 +65,7 @@
     </div>
 
 
-    <div class="w-full h-full @(songLyricsHidden ? "hidden xl:flex" : "flex") bg-gray_darkest top-0 left-0 p-4 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
+    <div class="w-full h-full @(songDataHidden ? "hidden xl:flex" : "flex")  bg-gray_darkest top-0 left-0 p-4 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
         <!-- Title, Author and Edit-->
         <div class="flex w-full">
             <button class="w-10 mr-2 font-ark  @(isEditMode ? "bg-primary text-white_light hover:bg-white hover:text-primary" : " bg-gray text-white_normal hover:text-white_light hover:bg-primary")"

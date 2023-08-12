@@ -1,12 +1,18 @@
 ﻿@inject IJSRuntime iJSRuntime
+@inject SettingsService settingsService
 
-<div class="absolute top-4 left-4 bottom-4 right-4 overflow-hidden bg-gray_darkest xl:pt-0 @Class">
+<div class="absolute top-4 left-4 bottom-4 right-4 overflow-hidden @(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") xl:pt-0 @Class">
     <div class="absolute z-30 flex w-full h-full">
         <button class="w-1/2 h-full" @onclick="Left"></button>
         <button class="w-1/2 h-full" @onclick="Right"></button>
     </div>
+    <div class="grid grid-rows-2 w-full h-full hidden">
+        <div id="" class="presentor w-full h-full text-white_light whitespace-pre-line">
+            @Lyric
+        </div>
+    </div>
 
-    <div id="presentor" class="presentor w-full h-full text-white_light whitespace-pre-line">
+    <div id="lyricPresentor" class="lyricPresentor w-full h-full text-white_light whitespace-pre-line">
         @Lyric
     </div>
 </div>

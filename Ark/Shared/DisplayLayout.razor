@@ -1,8 +1,9 @@
 @inherits LayoutComponentBase
 @inject DisplayService displayService
 @inject IJSRuntime iJSRuntime
+@inject SettingsService settingsService
 
-<div class="bg-gray_darkest w-screen h-screen">
+<div class="@(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") w-screen h-screen">
     <div class="w-full overflow-hidden h-full relative">
         <Presentor Lyric="@displayService.LyricToDisplay">
 

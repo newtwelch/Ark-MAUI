@@ -16,13 +16,13 @@ namespace Ark.Models.Songs
         {
             _dbConnection = new SQLiteAsyncConnection(Constants.SongDbPath, Constants.Flags);
             _dbConnection.CreateTableAsync<Song>();
-            _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5 (ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags)");
+            _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5 (ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags, InQueue)");
             secondWindow = new Window();
             settingsService = _settingService;
         }
 
-
         public async Task<List<Song>> GetAllSongsAsync() => await _dbConnection.Table<Song>().ToListAsync();
+
         public async Task AddSongAsync(Song song) 
         {
             await _dbConnection.InsertAsync(song);
@@ -30,56 +30,47 @@ namespace Ark.Models.Songs
         }
         public async Task UpdateSongAsync(Song song)
         {
-            await _dbConnection.ExecuteAsync($"UPDATE Song SET Title = ? , Author = ?, Language = ?, RawLyrics = ?, Sequence = ?, Tags = ? WHERE ID = {song.ID}",
-                                                               song.Title, song.Author, song.Language, song.RawLyrics, song.Sequence, song.Tags);
-            await _dbConnection.ExecuteAsync($"UPDATE SongFts SET Title = ? , Author = ?, Language = ?, RawLyrics = ?, Sequence = ?, Tags = ? WHERE ID = {song.ID}", 
-                                                               song.Title, song.Author, song.Language, song.RawLyrics, song.Sequence, song.Tags);
+            await _dbConnection.ExecuteAsync($"UPDATE Song SET Title = ? , Author = ?, Language = ?, RawLyrics = ?, Sequence = ?, Tags = ?, InQueue = ? WHERE ID = {song.ID}",
+                                                               song.Title, song.Author, song.Language, song.RawLyrics, song.Sequence, song.Tags, song.InQueue);
+            await _dbConnection.ExecuteAsync($"UPDATE SongFts SET Title = ? , Author = ?, Language = ?, RawLyrics = ?, Sequence = ?, Tags = ?, InQueue = ? WHERE ID = {song.ID}",
+                                                               song.Title, song.Author, song.Language, song.RawLyrics, song.Sequence, song.Tags, song.InQueue);
         }
         public async Task RemoveSongAsync(Song song)
         {
             await _dbConnection.ExecuteAsync($"DELETE FROM Song WHERE ID = {song.ID}");
             await _dbConnection.ExecuteAsync($"DELETE FROM SongFTS WHERE ID = {song.ID}");
-
         }
 
         public async Task<List<Song>> GetSongsFromTitleAsync(string searchTerm)
         {
-            var songsFts = new List<SongFts>();
             var songs = new List<Song>();
             searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
-            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, highlight(SongFts, 2, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Title, Author, RawLyrics, Sequence, Tags FROM SongFts WHERE Title MATCH '\"{searchTerm}\"*' ORDER BY rank");
+            songs = await _dbConnection.QueryAsync<Song>($"SELECT ID, Number, Language, highlight(SongFts, 2, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Title, Author, RawLyrics, Sequence, Tags, InQueue FROM SongFts WHERE Title MATCH '\"{searchTerm}\"*' ORDER BY rank");
 
-            songs.AddRange(songsFts);
             return songs;
         }
         public async Task<List<Song>> GetSongsFromAuthorsAsync(string searchTerm)
         {
-            var songsFts = new List<SongFts>();
             var songs = new List<Song>();
             searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
-            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, Title, highlight(SongFts, 3, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Author, RawLyrics, Sequence, Tags FROM SongFts WHERE Author MATCH '\"{searchTerm}\"*' ORDER BY rank");
+            songs = await _dbConnection.QueryAsync<Song>($"SELECT ID, Number, Language, Title, highlight(SongFts, 3, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Author, RawLyrics, Sequence, Tags, InQueue FROM SongFts WHERE Author MATCH '\"{searchTerm}\"*' ORDER BY rank");
 
-            songs.AddRange(songsFts);
             return songs;
         }
         public async Task<List<Song>> GetSongsFromLyricsAsync(string searchTerm)
         {
-            var songsFts = new List<SongFts>();
             var songs = new List<Song>();
             searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
-            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, Title, Author, highlight(SongFts, 4, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS RawLyrics, Sequence, Tags FROM SongFts WHERE RawLyrics MATCH '\"{searchTerm}\"*' ORDER BY rank");
+            songs = await _dbConnection.QueryAsync<Song>($"SELECT ID, Number, Language, Title, Author, highlight(SongFts, 4, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS RawLyrics, Sequence, Tags, InQueue FROM SongFts WHERE RawLyrics MATCH '\"{searchTerm}\"*' ORDER BY rank");
 
-            songs.AddRange(songsFts);
             return songs;
         }
         public async Task<List<Song>> GetSongsFromTagsAsync(string searchTerm)
         {
-            var songsFts = new List<SongFts>();
             var songs = new List<Song>();
             searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
-            songsFts = await _dbConnection.QueryAsync<SongFts>($"SELECT ID, Number, Language, Title, Author, RawLyrics, Sequence, highlight(SongFts, 7, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Tags FROM SongFts WHERE Tags MATCH '{searchTerm}*' ORDER BY rank");
+            songs = await _dbConnection.QueryAsync<Song>($"SELECT ID, Number, Language, Title, Author, RawLyrics, Sequence, highlight(SongFts, 7, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Tags, InQueue FROM SongFts WHERE Tags MATCH '{searchTerm}*' ORDER BY rank");
 
-            songs.AddRange(songsFts);
             return songs;
         }
 
@@ -96,7 +87,6 @@ namespace Ark.Models.Songs
 
             return await Task.FromResult(songs);
         }
-
         public async Task<bool> AddUpdateApiSongAsync(Song song)
         {
             string json = JsonConvert.SerializeObject(song);
@@ -125,7 +115,6 @@ namespace Ark.Models.Songs
             else
                 return await Task.FromResult(false);
         }
-
         public async Task<bool> RemoveApiSongAsync(Song song)
         {
             //DELETE
@@ -232,7 +221,6 @@ namespace Ark.Models.Songs
 
             return SequencedLyrics;
         }
-
         public Lyric newLyric(Lyric lyricToCopy)
         {
             Lyric lyric = new Lyric();
@@ -244,7 +232,6 @@ namespace Ark.Models.Songs
 
             return lyric;
         }
-
         public Song newSong(Song songToCopy)
         {
             Song song = new Song();
@@ -267,9 +254,9 @@ namespace Ark.Models.Songs
             await _dbConnection.DropTableAsync<SongFts>();
             await _dbConnection.ExecuteAsync("VACUUM");
             await _dbConnection.CreateTableAsync<Song>();
-            await _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags)");
+            await _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags, InQueue)");
             await _dbConnection.InsertAllAsync(await GetSongsFromApiAsync(devWebAPI));
-            await _dbConnection.ExecuteAsync("INSERT INTO SongFts(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags) SELECT ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags FROM Song");
+            await _dbConnection.ExecuteAsync("INSERT INTO SongFts(ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags, InQueue) SELECT ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags, InQueue FROM Song");
 
         }
     }

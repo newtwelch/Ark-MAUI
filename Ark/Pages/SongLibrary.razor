@@ -23,7 +23,7 @@
     <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" />
 </div>
 
-<div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm xl:text-base @opacity duration-500 transition-opacity">
+<div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm xl:text-base @opacity duration-500 transition-opacity ease-out">
 
     <div class="w-full h-full flex flex-col overflow-auto gap-2">
 
@@ -32,19 +32,22 @@
                 <button class="absolute inset-y-0 right-0 p-4 flex items-center @(String.IsNullOrWhiteSpace(searchText) ? "hidden" : "")" @onclick="async () =>{ searchText = string.Empty; await searchSongs(); }">
                     <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
                 </button>
-                <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "")" spellcheck="false"
+                <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0 @(isEditMode ? "hidden" : "") @(isQueueMode ? "hidden" : "")" spellcheck="false"
                        placeholder="Search" @bind-value="@searchText" @bind-value:event="oninput" @onkeyup="onSearch" />
             </div>
             
-            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "")" @onclick="async () => { await onSongAdd(false); }">S</button>
-            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-primary @(isEditMode ? "hidden" : "")">L</button>
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "") @(isQueueMode ? "hidden" : "")" @onclick="async () => { await onSongAdd(false); }">S</button>
+            <button class="ml-2 flex px-4 items-center justify-center gap-2 w-fit bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "") @(isQueueMode ? "" : "hidden")" @onclick="clearQueue">D <span class="font-sans">Clear Queue</span></button>
+            <button class="w-16 ml-2 p-4 bg-gray font-ark @(isQueueMode ?  "bg-primary text-white_light hover:bg-white hover:text-primary" : "text-white_normal hover:text-white_light hover:bg-primary") @(isEditMode ? "hidden" : "")" @onclick="ToggleQueueMode" >L</button>
         </div>
 
-        <div class="bg-gray w-full h-screen overflow-auto  scroll-smooth @(isEditMode ? "hidden" : "")">
-            <SongList Songs="@songs" DeleteSong="openDeleteModal" Song="@selectedSong" SelectedSong="onSongSelect">
-            </SongList>
+        <div class="bg-gray verticalscroll w-full h-screen overflow-y-auto overflow-x-hidden scroll-smooth @(isEditMode ? "hidden" : "")">
+            <div class="@songListOpacity transition-opacity ease-out">
+                <SongList Songs="@songs" DeleteSong="openDeleteModal" Song="@selectedSong" SelectedSong="onSongSelect" AddToQueue="addToQueue" RemoveToQueue="removeFromQueue">
+                    </SongList>
+            </div>
         </div>
-
+            
         <div class="flex flex-col mt-[86px] xl:mt-0 gap-2 h-full w-full z-30 @(isEditMode ? "" : "hidden")">
 
             <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
@@ -90,8 +93,8 @@
         </div>
 
         <!-- LYRICS -->
-        <div class="w-full h-full @(isEditMode ? "invisible xl:visible xl:mb-10" : "")  overflow-auto scroll-smooth">
-            <LyricList Lyrics="@selectedSong.Lyrics" LyricSelect="onLyricSelect" SelectedLyric="@selectedLyric" CanSelect="@isNotEditMode" />
+        <div class="w-full h-full verticalscroll @(isEditMode ? "invisible xl:visible xl:mb-10" : "") overflow-y-auto overflow-x-hidden scroll-smooth">
+                <LyricList Lyrics="@selectedSong.Lyrics" LyricSelect="onLyricSelect" SelectedLyric="@selectedLyric" CanSelect="@isNotEditMode" />
         </div>
         
         <!-- Languages -->

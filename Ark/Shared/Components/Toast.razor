@@ -1,8 +1,7 @@
 ﻿@inject ToastService ToastService
 @implements IDisposable
 
-<button type="button" @onclick="HideToast"
-        class="absolute bg-@_color @(_isVisible ? "opacity-100" : "opacity-0 pointer-events-none") left-1/2 transform -translate-x-1/2 bottom-4 z-50 transition-opacity ease-in-out hover:bg-opacity-50">
+<button type="button" @onclick="HideToast" class="absolute bg-@_color @(_isVisible ? "opacity-100" : "opacity-0 pointer-events-none") left-1/2 transform -translate-x-1/2 bottom-4 z-50 transition-opacity ease-in-out hover:bg-opacity-50">
     <div class="flex flex-col bg-gray_dark px-4 py-2 mt-2 text-white_light items-center">
         <h2 class="text-lg text-@_color">@_heading</h2>
         <p>@_message</p>
@@ -24,6 +23,7 @@
     private async void ShowToast(string message, string heading, ToastLevel level)
     {
         BuildToastSettings(level, message, heading);
+        _heading = heading;
         _isVisible = true;
         await InvokeAsync(StateHasChanged);
     }

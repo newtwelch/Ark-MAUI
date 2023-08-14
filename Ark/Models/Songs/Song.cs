@@ -17,10 +17,12 @@ namespace Ark.Models.Songs
         public string RawLyrics { get; set; } = "";
         public string Sequence { get; set; } = "";
         public string Tags { get; set; } = "";
+        public bool InQueue { get; set; } = false;
         [Ignore] public List<Lyric> Lyrics { get; set; }
         [Ignore] public string LyricHighlighted { get; set; }
         [Ignore] public string TitleHighlighted { get; set; }
     }
 
     public class SongFts : Song { }
+    public class SongQueue : Song { }
 }

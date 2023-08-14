@@ -898,18 +898,6 @@ select {
   top: 1rem;
 }
 
-.-top-10 {
-  top: -2.5rem;
-}
-
-.-bottom-10 {
-  bottom: -2.5rem;
-}
-
-.-left-4 {
-  left: -1rem;
-}
-
 .z-20 {
   z-index: 20;
 }
@@ -926,8 +914,17 @@ select {
   z-index: 50;
 }
 
+.col-span-3 {
+  grid-column: span 3 / span 3;
+}
+
 .m-4 {
   margin: 1rem;
+}
+
+.-mx-\[10px\] {
+  margin-left: -10px;
+  margin-right: -10px;
 }
 
 .mx-auto {
@@ -941,6 +938,10 @@ select {
 
 .-ml-2 {
   margin-left: -0.5rem;
+}
+
+.-mr-2 {
+  margin-right: -0.5rem;
 }
 
 .-mt-10 {
@@ -1023,6 +1024,10 @@ select {
   display: none;
 }
 
+.h-0 {
+  height: 0px;
+}
+
 .h-10 {
   height: 2.5rem;
 }
@@ -1033,6 +1038,10 @@ select {
 
 .h-2 {
   height: 0.5rem;
+}
+
+.h-20 {
+  height: 5rem;
 }
 
 .h-24 {
@@ -1057,6 +1066,11 @@ select {
 
 .h-full {
   height: 100%;
+}
+
+.h-min {
+  height: -moz-min-content;
+  height: min-content;
 }
 
 .h-screen {
@@ -1097,10 +1111,6 @@ select {
 
 .w-16 {
   width: 4rem;
-}
-
-.w-2 {
-  width: 0.5rem;
 }
 
 .w-4 {
@@ -1225,12 +1235,12 @@ select {
   align-items: center;
 }
 
-.justify-end {
-  justify-content: flex-end;
-}
-
 .justify-center {
   justify-content: center;
+}
+
+.justify-stretch {
+  justify-content: stretch;
 }
 
 .gap-2 {
@@ -1287,6 +1297,10 @@ select {
 
 .overflow-y-auto {
   overflow-y: auto;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
 }
 
 .overflow-y-scroll {
@@ -1601,6 +1615,10 @@ select {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
 @font-face {
   font-family: 'arkicons';
 
@@ -1660,13 +1678,12 @@ select {
   user-drag: none;
 }
 
-input[type=checkbox]:checked:after {
-  content: " ";
-  background: #000;
-}
-
 *:focus {
   outline: none;
+}
+
+.verticalscroll {
+  scrollbar-gutter: stable both-edges;
 }
 
 /* VERTICAL */
@@ -1681,7 +1698,6 @@ input[type=checkbox]:checked:after {
 
 ::-webkit-scrollbar-track:vertical {
   background: #1C1E23;
-  -webkit-box-shadow: inset 0 0 5px transparent;
   border-left: 5px solid #16191C;
 }
 
@@ -1689,7 +1705,6 @@ input[type=checkbox]:checked:after {
 
 ::-webkit-scrollbar-thumb:vertical {
   border-left: 5px solid #16191C;
-  -webkit-box-shadow: inset 0 0 5px transparent;
   background: #34383E;
 }
 
@@ -1949,10 +1964,6 @@ input[type=checkbox]:checked:after {
     margin-left: 1rem;
   }
 
-  .md\:flex {
-    display: flex;
-  }
-
   .md\:max-w-4xl {
     max-width: 56rem;
   }
@@ -2047,6 +2058,10 @@ input[type=checkbox]:checked:after {
 
   .xl\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .xl\:grid-cols-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .xl\:grid-rows-2 {

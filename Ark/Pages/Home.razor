@@ -7,7 +7,7 @@
 @implements IDisposable
 
 
-<div class="w-full h-screen mt-14 xl:mt-0 grid xl:grid-cols-2 gap-4 relative p-4 pb-[72px] xl:pb-4 text-white_normal overflow-auto">
+<div class="w-full h-screen flex mt-14 xl:mt-0 grid xl:grid-cols-4 gap-4 relative p-4 pb-[72px] xl:pb-4 text-white_normal overflow-auto">
 
     @if (settingsService.DeveloperMode())
     {
@@ -17,11 +17,12 @@
         </p>
     }
 
-    <div class="p-6 bg-gray_dark">
+    <div class="col-span-3 flex flex-col gap-4">
 
-        <h2 class="text-2xl font-bold text-white_light mb-6">General Settings</h2>
+        <div class="p-6 bg-gray_dark w-full h-min">
 
-        <div class="md:ml-4 flex flex-col gap-6">
+            <h2 class="text-2xl font-bold text-white_light mb-6">General Settings</h2>
+            <div class="md:ml-4 flex flex-col gap-6">
 
             <div class="grid md:grid-cols-2 items-center">
                 <div>
@@ -38,7 +39,7 @@
                     <label>Developer Mode</label>
                 </div>
                 <div class="flex md:justify-end gap-2">
-                    <input type="text" class="bg-gray_darkest py-2 px-4 text-white_light border-0 focus:ring-0 @(settingsService.DeveloperMode() ? "hidden" : "")" spellcheck="false"
+                    <input type="text" class="bg-gray_darkest py-2 w-full text-white_light border-0 focus:ring-0 @(settingsService.DeveloperMode() ? "hidden" : "")" spellcheck="false"
                            placeholder="Developer Key" value="@developerPassword" @onchange="(password) => settingsService.DevPass = password.Value.ToString()">
                     <button class="py-2 px-4 text-white_normal @(settingsService.DeveloperMode() ? "bg-opacity-0 text-green" : " bg-gray hover:bg-white_light hover:bg-opacity-10 text-sm hover:text-white_light")" @onclick="() => settingsService.DeveloperMode()">
                         @(settingsService.DeveloperMode() ? "Verified" : "Verify")
@@ -74,13 +75,12 @@
 
         </div>
 
-    </div>
+        </div>
 
-    <div class="p-6 bg-gray_dark">
+        <div class="p-6 bg-gray_dark w-full h-min">
 
-        <h2 class="text-2xl font-bold text-white_light mb-6">Song Library Settings</h2>
-
-        <div class="md:ml-4 flex flex-col gap-6">
+            <h2 class="text-2xl font-bold text-white_light mb-6">Song Library Settings</h2>
+            <div class="md:ml-4 flex flex-col gap-6">
 
             <div class="grid md:grid-cols-2 items-center">
                 <div>
@@ -95,13 +95,12 @@
 
         </div>
 
-    </div>
+        </div>
 
-    <div class="p-6 bg-gray_dark">
+        <div class="p-6 bg-gray_dark w-full h-min">
 
-        <h2 class="text-2xl font-bold text-white_light mb-6">Bible Settings</h2>
-
-        <div class="md:ml-4 flex flex-col gap-6">
+            <h2 class="text-2xl font-bold text-white_light mb-6">Bible Settings</h2>
+            <div class="md:ml-4 flex flex-col gap-6">
 
             <div class="md:ml-4 flex flex-col gap-6">
 
@@ -127,6 +126,11 @@
             </div>
 
         </div>
+
+        </div>
+    </div>
+    <div class="w-full flex justify-stretch p-6 bg-gray text-white_normal">
+        <h1>ARK Info</h1>
     </div>
 
     <span class="hidden text-red text-primary text-orange text-green bg-primary bg-red bg-orange bg-green group-hover:text-white_light"></span>
@@ -192,9 +196,9 @@
 
     private async Task onSongSync(bool devWebAPI)
     {
-        showLoadingSongApi = false;
-        await songService.SyncFromWebApiAsync(devWebAPI);
         showLoadingSongApi = true;
+        await songService.SyncFromWebApiAsync(devWebAPI);
+        showLoadingSongApi = false;
         await sessionStorage.SetItemAsync<bool>("showLoadingSongApi", showLoadingSongApi);
     }
 

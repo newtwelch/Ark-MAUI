@@ -24,7 +24,6 @@ namespace Ark.Pages
     public partial class SongLibrary
     {
         private List<Song> songs = new List<Song>();
-        private List<Song> songQueue = new List<Song>();
 
         private Song songToDelete = new Song();
         private Song selectedSong = new Song();
@@ -34,12 +33,14 @@ namespace Ark.Pages
         private DeviceOrientationPartialClass deviceOrientation = new DeviceOrientationPartialClass();
 
         private bool showDeleteModal = false;
+        private bool isQueueMode;
         private bool isEditMode;
         private bool isNotEditMode { get => !isEditMode; }
         private bool songDataHidden = true;
         private bool showPresentor = false;
 
         private string opacity = "opacity-0";
+        private string songListOpacity = "opacity-100";
         private string searchText = "";
         public string selectedLyricText = "";
 
@@ -56,6 +57,7 @@ namespace Ark.Pages
             //Session
             Song sessionSong = await sessionStorage.GetItemAsync<Song>("selectedSong");
             isEditMode = await sessionStorage.GetItemAsync<bool>("editMode");
+            isQueueMode = await sessionStorage.GetItemAsync<bool>("queueMode");
 
             if (sessionSong is not null) selectedSong = sessionSong;
             if (!String.IsNullOrEmpty(searchText)) await searchSongs();
@@ -170,6 +172,7 @@ namespace Ark.Pages
         public async void Dispose()
         {
             await sessionStorage.SetItemAsync<bool>("editMode", isEditMode);
+            await sessionStorage.SetItemAsync<bool>("queueMode", isQueueMode);
             await sessionStorage.SetItemAsync<bool>("lyricHidden", songDataHidden);
             await sessionStorage.SetItemAsync<string>("searchText", searchText);
             await sessionStorage.SetItemAsync<Song>("selectedSong", selectedSong);
@@ -178,14 +181,64 @@ namespace Ark.Pages
         }
 
 
+        private async Task addToQueue(Song song)
+        {
+            song.Title = song.Title.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            song.Title = song.Title.Replace("</span>", "");
+            song.Tags = song.Tags.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            song.Tags = song.Tags.Replace("</span>", "");
+            song.Author = song.Author.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            song.Author = song.Author.Replace("</span>", "");
+            song.RawLyrics = song.RawLyrics.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            song.RawLyrics = song.RawLyrics.Replace("</span>", "");
+            song.InQueue = true;
+            await songService.UpdateSongAsync(song);
+            await searchSongs();
+            toastService.ShowToast($"{song.Title} was ADDED to the queue", "Song Queue", ToastLevel.Info);
+        }
+        private async Task removeFromQueue(Song song)
+        {
+            song.InQueue = false;
+            await songService.UpdateSongAsync(song);
+            toastService.ShowToast($"{song.Title} was REMOVED from the queue", "Song Queue", ToastLevel.Warning);
+            if(isQueueMode) songs = (await songService.GetAllSongsAsync()).Where(s => s.InQueue == true).ToList();
+        }
+        private async Task ToggleQueueMode()
+        {
+            isQueueMode = !isQueueMode;
+            searchText = "";
+            if (isQueueMode)
+            {
+                songListOpacity = "opacity-0";
+                songs = (await songService.GetAllSongsAsync()).Where(s => s.InQueue == true).ToList();
+                songListOpacity = "opacity-100";
+            }
+            else
+            {
+                songListOpacity = "opacity-0";
+                songs = (await songService.GetAllSongsAsync()).ToList();
+                songListOpacity = "opacity-100";
+            }
+
+            StateHasChanged();
+        }
+        private async Task clearQueue()
+        {
+            foreach(var song in songs)
+            {
+                song.InQueue = false;
+                await songService.UpdateSongAsync(song);
+            }
+
+            songs = (await songService.GetAllSongsAsync()).Where(s => s.InQueue == true).ToList();
+        }
+
         // SONG SECTION
         //================================
 
         // ADD
         private async Task onSongAdd(bool isALanguage)
         {
-            songs = await songService.GetAllSongsAsync();
-
             Song newSong = new Song();
             newSong.Title = "Title";
             newSong.Author = "Author";
@@ -252,7 +305,7 @@ namespace Ark.Pages
         // DELETE
         private async Task onSongDelete()
         {
-            toastService.ShowToast($"{songToDelete.Title} was removed from the library", "Delete", ToastLevel.Info);
+            toastService.ShowToast($"{songToDelete.Title} was removed from the library", "Delete", ToastLevel.Warning);
 
             if (settingsService.DeveloperMode())
                 await songService.RemoveApiSongAsync(songToDelete);
@@ -260,7 +313,7 @@ namespace Ark.Pages
             await songService.RemoveSongAsync(songToDelete);
 
             if (String.IsNullOrWhiteSpace(searchText))
-                songs = await songService.GetAllSongsAsync();
+                songs = isQueueMode ? (await songService.GetAllSongsAsync()).Where(s => s.InQueue == true).ToList() : await songService.GetAllSongsAsync();
             else
                 await searchSongs();
             

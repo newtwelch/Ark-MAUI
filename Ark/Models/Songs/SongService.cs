@@ -10,14 +10,12 @@ namespace Ark.Models.Songs
     {
         private static SQLiteAsyncConnection _dbConnection;
         private readonly SettingsService settingsService;
-        public Window secondWindow;
 
         public SongService(SettingsService _settingService)
         {
             _dbConnection = new SQLiteAsyncConnection(Constants.SongDbPath, Constants.Flags);
             _dbConnection.CreateTableAsync<Song>();
             _dbConnection.ExecuteAsync("CREATE VIRTUAL TABLE SongFts USING Fts5 (ID, Number, Title, Author, RawLyrics, Language, Sequence, Tags, InQueue)");
-            secondWindow = new Window();
             settingsService = _settingService;
         }
 

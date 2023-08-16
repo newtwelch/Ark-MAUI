@@ -46,6 +46,10 @@
     user-drag: none;
 }
 
+.lyricPresentor{
+    text-wrap: balance;
+}
+
 *:focus {
     outline: none;
 }

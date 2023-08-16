@@ -8,7 +8,7 @@
                  }
              </span>
 
-             <div class="p-4 h-20 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "highlighted bg-primary text-white highlighted" : "text-white_normal")"
+            <div class="p-4 h-20 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "highlighted bg-primary text-white highlighted" : "text-white_normal")"
              @onclick="async () => { await SelectionChanged(song); }">
                  <div class="w-full mr-2 overflow-hidden flex flex-col">
                      <p class="w-full truncate text-ellipsis overflow-hidden">@Title(song)</p>
@@ -36,6 +36,12 @@
     [Parameter] public EventCallback<Song> AddToQueue { get; set; }
     [Parameter] public EventCallback<Song> RemoveToQueue { get; set; }
     [Parameter] public Song Song { get; set; } = new Song();
+
+    private static SongList songList;
+    public SongList()
+    {
+        songList = this;
+    }
 
     private string titleHighlightKept = "";
     private string tagHighlightKept = "";
@@ -84,12 +90,12 @@
             Song.Author = authorHighlightKept;
             Song.RawLyrics = rawLyricsHighlightKept;
         }
-        {
+        
             tagHighlightKept = song.Tags;
             titleHighlightKept = song.Title;
             authorHighlightKept = song.Author;
             rawLyricsHighlightKept = song.RawLyrics;
-        }
+        
 
         Song = song;
 
@@ -109,6 +115,7 @@
 
             if (args.Code == "ArrowDown") index += ((index += 1) >= Songs.Count) ? 0 : 1;
             else if (args.Code == "ArrowUp") index -= ((index -= 1) < 0) ? 0 : 1;
+            if (args.Code == "Enter") await JS.InvokeVoidAsync("focusInput", "lyric");
 
             await SelectionChanged(Songs[index]);
 
@@ -118,6 +125,14 @@
 
         }
     }
+
+
+    [JSInvokable]
+    public static async void JStoCSCallsong()
+    {
+        await songList.SelectionChanged(songList.Songs[0]);
+    }
+    
     private async void SelectionDelete(Song song) => await DeleteSong.InvokeAsync(song);
     private async void SelectionAddToQueue(Song song) => await AddToQueue.InvokeAsync(song);
     private async void SelectionRemoveToQueue(Song song) => await RemoveToQueue.InvokeAsync(song);

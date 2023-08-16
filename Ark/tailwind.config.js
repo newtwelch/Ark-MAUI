@@ -18,7 +18,7 @@ module.exports = {
                 ark: ['arkicons', 'sans'],
                 sans: ['gontserrat', 'sans']
             }
-        },
+        }
     },
     future: {
         hoverOnlyWhenSupported: true,

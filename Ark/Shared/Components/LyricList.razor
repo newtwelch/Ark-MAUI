@@ -1,7 +1,7 @@
 ﻿@if (Lyrics is null)
 {
-    <div class="p-4 w-full text-center bg-gray_dark select-none text-white_normal whitespace-pre cursor-pointer">
-        <span>[!] No Lyric Found</span>
+    <div class="bg-orange -mx-[10px] items-center text-white p-4">
+        This song has no lyrics
     </div>
     return;
 }
@@ -28,8 +28,8 @@
 }
 else
 {
-    <div class="bg-gray w-full items-center text-white_normal p-4">
-        There are no Lyrics
+    <div class="bg-orange -mx-[10px] items-center text-white p-4">
+        This song has no lyrics
     </div>
 }
 
@@ -43,6 +43,13 @@ else
     [Parameter] public Lyric SelectedLyric { get; set; }
     [Parameter] public bool CanSelect { get; set; }
 
+    private bool fromEnter;
+    private static LyricList lyricList;
+    public LyricList()
+    {
+        lyricList = this;
+    }
+
     private RenderFragment Lyric(string lyric) => (builder) =>
     {
         builder.AddMarkupContent(0, $"{lyric}");
@@ -52,7 +59,8 @@ else
     {
         if (lyrics != Lyrics)
         {
-            SelectedLyric.ID = 0;
+            if(!fromEnter)
+                SelectedLyric.ID = 0;
             lyrics = Lyrics;
         }
     }
@@ -63,16 +71,23 @@ else
         {
             if (args.Key == Key.Escape) return;
             int index = Lyrics.FindIndex(s => s.ID == SelectedLyric.ID);
-            
+
             if (args.Code == "ArrowDown") index += ((index += 1) >= Lyrics.Count) ? 0 : 1;
             else if (args.Code == "ArrowUp") index -= ((index -= 1) < 0) ? 0 : 1;
 
-                await SelectionChanged(Lyrics[index]);
+            await SelectionChanged(Lyrics[index]);
         }
         catch (Exception ex)
         {
 
         }
+    }
+
+    [JSInvokable]
+    public static async void JStoCSCalllyric()
+    {
+        lyricList.fromEnter = true;
+        await lyricList.SelectionChanged(lyricList.Lyrics[0]);
     }
 
     private async Task SelectionChanged(Lyric lyric) 
@@ -84,6 +99,7 @@ else
 
         await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
         await ScrollToView("lyric");
+        fromEnter = false;
     }
 
     private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);

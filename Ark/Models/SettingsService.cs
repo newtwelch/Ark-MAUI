@@ -9,6 +9,9 @@ namespace Ark.Models
 {
     public class SettingsService
     {
+
+        public Window secondWindow;
+
         // Escape: Display blank do not close Window : TRUE
         // Single Window Mode                        : FALSE(Desktop), TRUE(Mobile)
         // Display to Main Monitor                   : FALSE
@@ -36,6 +39,10 @@ namespace Ark.Models
             set { trueBlackBackground = value; }
         }
 
+        public SettingsService()
+        {
+            secondWindow = new Window();
+        }
         // ( Mobile ) Auto landscape                 : TRUE
         // 
 

@@ -62,12 +62,21 @@ namespace Ark.Pages
             if (sessionSong is not null) selectedSong = sessionSong;
             if (!String.IsNullOrEmpty(searchText)) await searchSongs();
             if (selectedSong.ID != 0) songDataHidden = await sessionStorage.GetItemAsync<bool>("lyricHidden");
-            
+
         }
 
         protected override void OnAfterRender(bool firstRender) { if (firstRender) opacity = "opacity-100"; }
-        
-        private async Task onSearch(KeyboardEventArgs e) => await searchSongs();
+
+        private async Task onSearch(KeyboardEventArgs e)
+        {
+            if(e.Code == "Enter") 
+            {
+                onSongSelect(songs[0]);
+                await iJSRuntime.InvokeVoidAsync("focusInput", "song");
+                return;
+            }
+            await searchSongs();
+        }
 
         private async Task searchSongs()
         {
@@ -109,15 +118,15 @@ namespace Ark.Pages
             _selectedLyric.Text = _selectedLyric.Text.Replace("</span>", "");
 
             deviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
-            
+
 #if ANDROID
             showPresentor = true;
 #endif
 #if WINDOWS
-            if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(songService.secondWindow))
+            if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(settingsService.secondWindow))
             {
-                songService.secondWindow.Page = new DisplayPage(settingsService);
-                Application.Current.OpenWindow(songService.secondWindow);
+                settingsService.secondWindow.Page = new DisplayPage(settingsService);
+                Application.Current.OpenWindow(settingsService.secondWindow);
             }
 #endif
             displayService.LyricToDisplay = _selectedLyric.Text;
@@ -150,8 +159,8 @@ namespace Ark.Pages
         private void onBack()
         {
 #if WINDOWS
-            if (Application.Current.Windows.Contains(songService.secondWindow))
-                Application.Current.CloseWindow(songService.secondWindow);
+            if (Application.Current.Windows.Contains(settingsService.secondWindow))
+                Application.Current.CloseWindow(settingsService.secondWindow);
 
 #endif
             //TODO: QUIT App if already true

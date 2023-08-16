@@ -47,6 +47,13 @@
             var Type = document.getElementById(id);
             var selected = Type.getElementsByClassName("highlighted")[0];
             selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
+
+        }
+
+        function focusInput(id) {
+            var Type = document.getElementById(id);
+            DotNet.invokeMethodAsync('Ark', 'JStoCSCall' + id);
+            Type?.focus();
         }
 
         document.addEventListener('keydown', preventKeyBoardScroll, false);

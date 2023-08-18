@@ -27,20 +27,32 @@
 
     <script src="textFit.js"></script>
     <script>
-        window.resetInnerHTML = (innerString) => {
-            if (document.getElementById("lyricPresentor") !== null) {
-                document.getElementById("lyricPresentor").classList.remove("opacity-100");
-                document.getElementById("lyricPresentor").classList.add("opacity-0");
-                document.getElementById("lyricPresentor").innerHTML = innerString;
-                document.getElementById("lyricPresentor").removeAttribute("textFitted");
-                document.getElementById("lyricPresentor").removeAttribute("style");
+        var stringToHTML = function (str) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(str, 'text/html');
+            return doc.body;
+        };
+
+        window.resetInnerHTML = (id, innerString, optionalBible) => {
+            if (document.getElementById(id) !== null) {
+                document.getElementById(id).innerHTML = "";
+                if (optionalBible !== null) {
+                    document.getElementById(id).appendChild(stringToHTML(optionalBible).firstChild);
+                }
+                document.getElementById(id).classList.remove("opacity-100");
+                document.getElementById(id).classList.add("opacity-0");
+                document.getElementById(id).appendChild(stringToHTML(innerString).firstChild);
+                console.log("heeey");
+                console.log(stringToHTML(innerString).firstChild);
+                document.getElementById(id).removeAttribute("textFitted");
+                document.getElementById(id).removeAttribute("style");
             }
         }
 
-        function doFit() {
-            textFit(document.getElementById("lyricPresentor"), { maxFontSize: 85 });
-            document.getElementById("lyricPresentor").classList.remove("opacity-0");
-            document.getElementById("lyricPresentor").classList.add("opacity-100");
+        function doFit(id) {
+            textFit(document.getElementById(id), { maxFontSize: 85 });
+            document.getElementById(id).classList.remove("opacity-0");
+            document.getElementById(id).classList.add("opacity-100");
         }
 
         function ScrollToItem(id) {
@@ -59,6 +71,10 @@
             var Type = document.getElementById(id);
             DotNet.invokeMethodAsync('Ark', 'JStoCSCall' + id);
             Type?.focus();
+        }
+
+        function chapterSelect(chapter) {
+            DotNet.invokeMethodAsync('Ark', 'JStoCSCallchapter', chapter-1);
         }
 
         function nextVerse(moveBack) {

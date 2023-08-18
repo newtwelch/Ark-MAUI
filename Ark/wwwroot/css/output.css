@@ -940,6 +940,11 @@ select {
   margin-right: auto;
 }
 
+.my-10 {
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+}
+
 .-mb-2 {
   margin-bottom: -0.5rem;
 }
@@ -958,6 +963,10 @@ select {
 
 .-mt-2 {
   margin-top: -0.5rem;
+}
+
+.-mt-20 {
+  margin-top: -5rem;
 }
 
 .mb-14 {
@@ -1091,11 +1100,6 @@ select {
 
 .h-screen {
   height: 100vh;
-}
-
-.h-fit {
-  height: -moz-fit-content;
-  height: fit-content;
 }
 
 .max-h-1 {
@@ -1234,10 +1238,6 @@ select {
 
 .grid-cols-2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.grid-rows-2 {
-  grid-template-rows: repeat(2, minmax(0, 1fr));
 }
 
 .flex-row {
@@ -1725,7 +1725,7 @@ select {
   user-drag: none;
 }
 
-.lyricPresentor{
+.presentor{
   text-wrap: balance;
 }
 

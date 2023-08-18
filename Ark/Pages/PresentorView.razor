@@ -4,7 +4,8 @@
 @inject SettingsService settingsService
 
 <div class="@(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") relative w-full h-screen">
-    <Presentor Lyric="@displayService.LyricToDisplay">
+    <Presentor Lyric="@displayService.LyricToDisplay" Verse="@displayService.BibleVerseToDisplay" BibleBook="@displayService.BibleBookInfoToDisplay"
+               IsBible="@displayService.IsBible">
 
     </Presentor>
 </div>

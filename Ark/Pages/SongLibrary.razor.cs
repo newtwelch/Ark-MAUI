@@ -30,7 +30,6 @@ namespace Ark.Pages
         private Song songBackUp = new Song();
         private Lyric selectedLyric = new Lyric();
         private HotKeysContext HotKeysContext;
-        private DeviceOrientationPartialClass deviceOrientation = new DeviceOrientationPartialClass();
 
         private bool showDeleteModal = false;
         private bool isQueueMode;
@@ -117,7 +116,7 @@ namespace Ark.Pages
             _selectedLyric.Text = _selectedLyric.Text.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             _selectedLyric.Text = _selectedLyric.Text.Replace("</span>", "");
 
-            deviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
+            settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
 
 #if ANDROID
             showPresentor = true;
@@ -129,6 +128,7 @@ namespace Ark.Pages
                 Application.Current.OpenWindow(settingsService.secondWindow);
             }
 #endif
+            displayService.IsBible = false;
             displayService.LyricToDisplay = _selectedLyric.Text;
             selectedLyric = _selectedLyric;
             selectedLyricText = selectedLyric.Text;
@@ -166,7 +166,7 @@ namespace Ark.Pages
             //TODO: QUIT App if already true
             if (showPresentor)
             {
-                deviceOrientation.SetDeviceOrientation(DisplayOrientation.Portrait);
+                settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Portrait);
                 showPresentor = false;
                 selectedLyric = emptyLyric;
             }

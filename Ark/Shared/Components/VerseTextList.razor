@@ -1,4 +1,6 @@
-﻿@if (Verses.Count > 0)
+﻿@inject DisplayService displayService
+
+@if (Verses.Count > 0)
 {
     <p id="verseText" class="w-full highlighted p-2 leading-9 bg-primary text-white_light" tabindex="0" @onkeydown="KeyPress">
         @foreach(var verse in Verses)
@@ -49,8 +51,16 @@
     {
         Verse = verse;
 
-        await SelectedVerse.InvokeAsync(verse);
+        displayService.BibleVerseToDisplay = displayService.BibleVerseToDisplay.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+        displayService.BibleVerseToDisplay = displayService.BibleVerseToDisplay.Replace("</span>", "");
 
+        int startIndex = displayService.BibleVerseToDisplay.ToLower().IndexOf(verse.ToLower());
+        int endIndex = startIndex + verse.Length;
+        string wrap = displayService.BibleVerseToDisplay.Substring(startIndex, endIndex - startIndex);
+        wrap = displayService.BibleVerseToDisplay.Replace(wrap, "<span class=\"text-orange group-hover:text-white_light\">" + wrap + "</span>");
+        displayService.BibleVerseToDisplay = wrap;
+
+        await SelectedVerse.InvokeAsync(verse);
         LastIndex = Verses.FindIndex(v => v == verse);
     }
 

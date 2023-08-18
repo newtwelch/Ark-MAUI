@@ -11,6 +11,7 @@ namespace Ark.Models
     {
 
         public Window secondWindow;
+        public DeviceOrientationPartialClass DeviceOrientation;
 
         // Escape: Display blank do not close Window : TRUE
         // Single Window Mode                        : FALSE(Desktop), TRUE(Mobile)
@@ -46,7 +47,9 @@ namespace Ark.Models
         public SettingsService()
         {
             secondWindow = new Window();
+            DeviceOrientation = new DeviceOrientationPartialClass();
         }
+
 
         //BIBLE SETTINGS
         private bool alwaysEnglishBooks;

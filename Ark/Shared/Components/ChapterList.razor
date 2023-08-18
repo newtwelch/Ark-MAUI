@@ -72,8 +72,8 @@
 
 
     [JSInvokable]
-    public static async void JStoCSCallChapter()
+    public static async void JStoCSCallchapter(int id)
     {
-        await chapterList.SelectionChanged(chapterList.Chapters[0]);
+            await chapterList.SelectionChanged(chapterList.Chapters[id]);
     }
 }

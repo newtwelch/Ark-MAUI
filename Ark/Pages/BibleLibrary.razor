@@ -2,7 +2,12 @@
 @using System.Text.RegularExpressions;
 @inject BibleService bibleService
 @inject SettingsService settingsService
+@inject DisplayService displayService
 @inject IJSRuntime iJSRuntime
+
+<div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50  @(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") h-screen w-screen absolute transition-opacity font-sans">
+    <Presentor BibleBook="@($"{selectedBook.Name} {selectedChapter.chapter}:{selectedVerse.Verse}")" Verse="@selectedVerse.Text" />
+</div>
 
 <div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm mt-14 pb-[72px] xl:pb-4 xl:mt-0 xl:text-base @opacity duration-500 transition-opacity ease-out">
 
@@ -60,7 +65,12 @@
     <div class="w-full flex-col hidden xl:flex overflow-auto gap-2">
         
 
-        <div class="flex ">
+        <div class="flex gap-2">
+            <div class="relative w-10">
+                <input type="text" class="bg-gray_dark w-full p-2 h-full text-white_light border-0 focus:ring-0" spellcheck="false"
+                       placeholder="V" />
+            </div>
+
             <div class="relative w-full">
                 <button class="absolute inset-y-0 right-0 p-4 flex items-center">
                     <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
@@ -69,11 +79,10 @@
                        placeholder="Search" />
             </div>
 
-            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20">B</button>
         </div>
 
         <div class="verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
-            <VerseList Verses="@verses">
+            <VerseList Verses="@verses" SelectedVerse="onSelectVerse">
 
             </VerseList>
         </div>
@@ -104,7 +113,9 @@
     private Bible selectedBible = new Bible();
     private Book selectedBook = new Book();
     private Chapter selectedChapter = new Chapter();
+    private ArkBible selectedVerse = new ArkBible();
 
+    private bool showPresentor;
     private string searchedBook = "";
     private string searchedChapter = "";
     private string opacity = "opacity-0";
@@ -123,7 +134,6 @@
         Languages = await bibleService.GetAllBiblesAsync();
         selectedBible = (await bibleService.GetAllBiblesAsync()).FirstOrDefault();
         books = await bibleService.GetBooks(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks);
-
     }
 
     private async Task onSelectBibleLanguage(Bible _bible)
@@ -136,7 +146,7 @@
 
     private async Task onBookSearch(KeyboardEventArgs e)
     {
-        if (e.Key == "Shift" || e.Key == "Control" || e.Key == "Alt") return;
+        if (e.Key == "Shift" || e.Key == "Control" || e.Key == "Alt" || e.Key == "Backspace") return;
 
         searchedBook = Regex.Replace(searchedBook, @"(\d)(\p{L})", "$1 $2");
 
@@ -150,19 +160,23 @@
 
     private async Task onChapterSearch(KeyboardEventArgs e)
     {
-        if (!searchedChapter.All(Char.IsLetterOrDigit) || e.MetaKey || e.CtrlKey || e.ShiftKey || String.IsNullOrWhiteSpace(searchedChapter)) return;
+        if (!searchedChapter.All(Char.IsLetterOrDigit) || String.IsNullOrWhiteSpace(searchedChapter)) return;
+
         searchedChapter = Regex.Replace(searchedChapter, "[^0-9.]", "");
         int searchedChapterNumber; 
-        bool i = Int32.TryParse(searchedChapter, out searchedChapterNumber);
-        await onSelectChapter(chapters.Find(c => c.chapter == searchedChapterNumber));
-        await iJSRuntime.InvokeVoidAsync("ScrollToItem", "chapter");
+        bool isNumber = Int32.TryParse(searchedChapter, out searchedChapterNumber);
+        if (isNumber)
+        {
+            await onSelectChapter(chapters.Find(c => c.chapter == searchedChapterNumber));
+            await Task.Delay(100);
+            await iJSRuntime.InvokeVoidAsync("chapterSelect", Math.Min(searchedChapterNumber, chapters.Count));
+        }
     }
 
     private async Task onSelectBook(Book _book)
     {
         if (_book is null) return;
 
-        chapters.Clear();
         chapters = await bibleService.GetChapters(selectedBible, _book.ID);
         selectedBook = _book;
         if (selectedChapter is not null)
@@ -174,9 +188,29 @@
     private async Task onSelectChapter(Chapter _chapter)
     {
         if (_chapter is null) return;
-        verses.Clear();
         verses = await bibleService.GetVerses(selectedBible, selectedBook.ID, _chapter.chapter);
         selectedChapter = _chapter;
     }
 
+    private async Task onSelectVerse(ArkBible _verse)
+    {
+        if (_verse is null) return;
+
+        settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
+
+        displayService.IsBible = true;
+#if ANDROID
+    showPresentor = true;
+#endif
+#if WINDOWS
+    if (selectedVerse != _verse && !Application.Current.Windows.Contains(settingsService.secondWindow))
+    {
+    settingsService.secondWindow.Page = new DisplayPage(settingsService);
+    Application.Current.OpenWindow(settingsService.secondWindow);
+    }
+#endif
+        displayService.BibleVerseToDisplay = _verse.Text;
+        displayService.BibleBookInfoToDisplay =  $"{selectedBook.Name} {selectedChapter.chapter}:{_verse.Verse}" ;
+        selectedVerse = _verse;
+    }
 }

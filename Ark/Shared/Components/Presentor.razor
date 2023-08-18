@@ -6,33 +6,50 @@
         <button class="w-1/2 h-full" @onclick="Left"></button>
         <button class="w-1/2 h-full" @onclick="Right"></button>
     </div>
-    <div class="grid grid-rows-2 w-full h-full hidden">
-        <div id="" class="presentor w-full h-full text-white_light whitespace-pre-line">
-            @Lyric
+    <div class="flex flex-col w-full h-full my-10 @(IsBible ? "" : "hidden")">
+        <div id="versePresentor" class="versePresentor presentor w-full h-full -mt-20 text-white_light whitespace-pre-line">
+            
         </div>
     </div>
 
-    <div id="lyricPresentor" class="lyricPresentor w-full h-full text-white_light whitespace-pre-line">
+    <div id="lyricPresentor" class="lyricPresentor presentor w-full h-full text-white_light whitespace-pre-line">
         @Lyric
     </div>
 </div>
 @code {
     [Parameter] public string Class { get; set; }
-    private string lyric;
     [Parameter] public string Lyric { get; set; }
+    [Parameter] public string Verse { get; set; }
+    [Parameter] public string BibleBook { get; set; }
     [Parameter] public EventCallback Next { get; set; }
     [Parameter] public EventCallback Previous { get; set; }
+    [Parameter] public bool IsBible { get; set; }
+
+    private string lyric;
+    private string verse;
+    private string bibleBook;
 
     private void Right() => Next.InvokeAsync();
     private void Left() => Previous.InvokeAsync();
 
     protected override async Task OnParametersSetAsync()
     {
-        if(!String.IsNullOrEmpty(Lyric) && Lyric != lyric)
+        if (!String.IsNullOrWhiteSpace(Verse) && Verse != verse && IsBible)
         {
-            await iJSRuntime.InvokeVoidAsync("resetInnerHTML", Lyric);
-            await iJSRuntime.InvokeVoidAsync("doFit");
+            await Task.Delay(1);
+            BibleBook = BibleBook.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
+            BibleBook = BibleBook.Replace("</span>", "");
+            await iJSRuntime.InvokeVoidAsync("resetInnerHTML", "versePresentor", $"<div>{Verse}</div>", $"<div>{BibleBook}</div>");
+            await iJSRuntime.InvokeVoidAsync("doFit", "versePresentor");
+            verse = Verse;
+        }
+
+        if (!String.IsNullOrWhiteSpace(Lyric) && Lyric != lyric && !IsBible)
+        {
+            await iJSRuntime.InvokeVoidAsync("resetInnerHTML", "lyricPresentor", Lyric);
+            await iJSRuntime.InvokeVoidAsync("doFit", "lyricPresentor");
             lyric = Lyric;
         }
+
     }
 }

@@ -5,7 +5,8 @@
 
 <div class="@(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") w-screen h-screen">
     <div class="w-full overflow-hidden h-full relative">
-        <Presentor Lyric="@displayService.LyricToDisplay">
+        <Presentor Lyric="@displayService.LyricToDisplay" Verse="@displayService.BibleVerseToDisplay" BibleBook="@displayService.BibleBookInfoToDisplay" 
+        IsBible="@displayService.IsBible">
 
         </Presentor>
     </div>

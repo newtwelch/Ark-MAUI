@@ -1,0 +1,138 @@
+﻿@using System.Text.RegularExpressions;
+@if (Verses.Count > 0)
+{
+    <div id="verse" class="h-full flex flex-col space-y-reverse space-y-2 -mx-[10px]" tabindex="0" @onkeydown="KeyPress">
+        <Virtualize Items="Verses" Context="verse" ItemSize="80" OverscanCount="50">
+             <span class="hidden h-0">
+                @{
+                    bool isHighlighted = Verse?.Verse == verse?.Verse;
+                }
+            </span>
+
+            <div class="xl:flex group" @onclick="async () => { if(!isHighlighted){ await SelectionChanged(verse); }}">
+                @if (!isHighlighted)
+                {
+                    <div class="w-full xl:w-10 mr-2 hidden xl:grid xl:bg-gray items-center text-center text-white_normal group-hover:text-white">
+                        @verse.Verse
+                    </div>
+                    <div class="p-4 w-full select-none whitespace-normal break-words cursor-pointer @(isHighlighted ? "highlighted bg-primary text-white_light" : "bg-gray_dark text-white_normal group-hover:text-white_light")">
+                        @verse.Text
+                    </div>
+                }
+                else
+                {
+                    <div class="w-full xl:w-10 mr-2 hidden xl:grid xl:bg-gray items-center text-center text-white_normal group-hover:text-white">
+                        @verse.Verse
+                    </div>
+                    <VerseTextList Verses="VerseText" SelectedVerse="onSelectVerseText" Verse="@selectedVerseText">
+
+                    </VerseTextList>
+                }
+            </div>
+            </Virtualize>
+    </div>
+}
+
+
+@code {
+    [Inject] IJSRuntime JS { get; set; }
+    private List<ArkBible> verses;
+    [Parameter] public List<ArkBible> Verses { get; set; }
+    [Parameter] public EventCallback<ArkBible> SelectedVerse { get; set; }
+    [Parameter] public ArkBible Verse { get; set; } = new ArkBible();
+
+    public string selectedVerseText { get; set; }
+    private List<string> VerseText = new List<string>();
+
+    bool fromEnter;
+
+    protected override void OnParametersSet()
+    {
+        if (verses != Verses)
+        {
+            if (!fromEnter)
+                Verse.Verse = 0;
+            verses = Verses;
+        }
+    }
+
+    private static VerseList verseList;
+    public VerseList()
+    {
+        verseList = this;
+    }
+
+    private int ItemCount = 0;
+    private int LastIndex = 0;
+
+
+    private void onSelectVerseText(string verse)
+    {
+        selectedVerseText = verse;
+    }
+
+    private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);
+
+    private async Task SelectionChanged(ArkBible verse)
+    {
+
+        Verse = verse;
+
+        VerseText = Regex.Split(verse.Text, @"(?<=[\.,;:!\?])\s+").ToList();
+
+        await SelectedVerse.InvokeAsync(verse);
+
+        LastIndex = Verses.FindIndex(b => b.Verse == verse.Verse);
+
+        await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
+        await ScrollToView("verse");//
+    }
+
+    private async Task KeyPress(KeyboardEventArgs args)
+    {
+        try
+        {
+            if (selectedVerseText is null)
+            {
+                int index = Verses.FindIndex(v => v.Verse == Verse.Verse);
+
+                if (args.Code == "ArrowDown") index += ((index += 1) >= Verses.Count) ? 0 : 1;
+                else if (args.Code == "ArrowUp") index -= ((index -= 1) < 0) ? 0 : 1;
+                if (args.Code == "Enter") await JS.InvokeVoidAsync("focusInput", "chapter");
+
+                await SelectionChanged(Verses[index]);
+            }
+
+        }
+        catch (Exception ex)
+        {
+
+        }
+    }
+
+
+    [JSInvokable]
+    public static async void JStoCSCallverse()
+    {
+        await verseList.SelectionChanged(verseList.Verses[0]);
+    }
+    [JSInvokable]
+    public static async void NextVerse(bool moveBack)
+    {
+        if (moveBack)
+        {
+            int i = verseList.Verses.IndexOf(verseList.Verse) - 1;
+            if (i < 0) i = 0;
+            await verseList.SelectionChanged(verseList.Verses[i]);
+            await verseList.JS.InvokeVoidAsync("focusInput", "verseText");
+        }
+        else
+        {
+            int i = verseList.Verses.IndexOf(verseList.Verse) + 1;
+            if (i >= verseList.Verses.Count) i = verseList.Verses.Count - 1;
+            await verseList.SelectionChanged(verseList.Verses[i]);
+            await verseList.JS.InvokeVoidAsync("focusInput", "verseText");
+        }
+        await verseList.JS.InvokeVoidAsync("ScrollToItem", "verse");
+    }
+}

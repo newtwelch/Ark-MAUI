@@ -99,7 +99,7 @@
         </div>
         
         <!-- Languages -->
-        <div class="w-full flex flex-row mb-16 h-14 overflow-auto @(isEditMode ? "hidden" : "") xl:mb-0 overflow-auto">
+        <div class="w-full flex flex-row mb-14 h-14 overflow-auto @(isEditMode ? "hidden" : "") xl:mb-0 overflow-auto">
             <SongLanguageList Songs="@(songs.Where(s => s.Number == selectedSong.Number).ToList())" SelectedSong="onSongSelect" Song="selectedSong">
             </SongLanguageList>
             <button class="w-14 font-bold text-2xl bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20 @(isEditMode ? "hidden" : "")" @onclick=" async () => { await onSongAdd(true); }">+</button>

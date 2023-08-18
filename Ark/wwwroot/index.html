@@ -44,16 +44,25 @@
         }
 
         function ScrollToItem(id) {
-            var Type = document.getElementById(id);
-            var selected = Type.getElementsByClassName("highlighted")[0];
-            selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
-
+            try {
+                var Type = document.getElementById(id);
+                var selected = Type.getElementsByClassName("highlighted")[0];
+                selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
+                console.log(id);
+                console.log(selected);
+            } catch (err) {
+                console.log(err);
+            }
         }
 
         function focusInput(id) {
             var Type = document.getElementById(id);
             DotNet.invokeMethodAsync('Ark', 'JStoCSCall' + id);
             Type?.focus();
+        }
+
+        function nextVerse(moveBack) {
+            DotNet.invokeMethodAsync('Ark', 'NextVerse', moveBack);
         }
 
         document.addEventListener('keydown', preventKeyBoardScroll, false);

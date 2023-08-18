@@ -136,12 +136,4 @@
     private async void SelectionDelete(Song song) => await DeleteSong.InvokeAsync(song);
     private async void SelectionAddToQueue(Song song) => await AddToQueue.InvokeAsync(song);
     private async void SelectionRemoveToQueue(Song song) => await RemoveToQueue.InvokeAsync(song);
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (firstRender)
-        {
-            StateHasChanged();
-        }
-    }
 }

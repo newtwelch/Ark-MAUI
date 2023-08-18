@@ -15,6 +15,11 @@ namespace Ark.Models
         // Escape: Display blank do not close Window : TRUE
         // Single Window Mode                        : FALSE(Desktop), TRUE(Mobile)
         // Display to Main Monitor                   : FALSE
+        // ( Mobile ) Auto landscape                 : TRUE
+        // 
+
+        // Use true black background on Projector    : TRUE
+
         private string chosenMonitor;
         public string ChosenMonitor
         {
@@ -31,7 +36,6 @@ namespace Ark.Models
             return isMatch;
         }
 
-        // Use true black background on Projector    : TRUE
         private bool trueBlackBackground;
         public bool TrueBlackBackground
         {
@@ -43,8 +47,14 @@ namespace Ark.Models
         {
             secondWindow = new Window();
         }
-        // ( Mobile ) Auto landscape                 : TRUE
-        // 
+
+        //BIBLE SETTINGS
+        private bool alwaysEnglishBooks;
+        public bool AlwaysEnglishBooks
+        {
+            get { return alwaysEnglishBooks; }
+            set { alwaysEnglishBooks = value; }
+        }
 
     }
 }

@@ -72,8 +72,6 @@ public partial class DisplayPage : ContentPage
 
     }
 
-
-
     [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     public static extern bool SetForegroundWindow(IntPtr hWnd);
 

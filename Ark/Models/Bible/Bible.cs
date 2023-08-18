@@ -10,6 +10,7 @@ namespace Ark.Models.Bible
     [Table("Bibles")]
     public class Bible
     {
+        [PrimaryKey, AutoIncrement] public int ID { get; set; }
         public string Translation { get; set; }
         public string Abbreviation { get; set; }
         public string Description { get; set; }
@@ -40,15 +41,16 @@ namespace Ark.Models.Bible
     public class Book
     {
         public int nr { get; set; }
+        public int ID { get; set; }
         public string Name { get; set; }
-        public Chapter[] Chapters { get; set; }
+        public List<Chapter> Chapters { get; set; }
     }
 
     public class Chapter
     {
         public int chapter { get; set; }
         public string Name { get; set; }
-        public Verse[] Verses { get; set; }
+        public List<Verse> Verses { get; set; }
     }
 
     public class Verse
@@ -62,7 +64,9 @@ namespace Ark.Models.Bible
     public class ArkBible
     {
         public int ID { get; set; }
-        public string Name { get; set; }
+        public int Book { get; set; }
+        public int Chapter { get; set; }
+        public int Verse { get; set; }
         public string Text { get; set; }
     }
 }

@@ -1,7 +1,182 @@
 ﻿@page "/biblelibrary"
+@using System.Text.RegularExpressions;
+@inject BibleService bibleService
+@inject SettingsService settingsService
+@inject IJSRuntime iJSRuntime
 
-<h3>BibleLibrary</h3>
+<div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm mt-14 pb-[72px] xl:pb-4 xl:mt-0 xl:text-base @opacity duration-500 transition-opacity ease-out">
+
+
+    <div class="w-full h-full flex flex-col overflow-auto gap-2">
+        
+
+        <div class="flex gap-2">
+            <div class="relative w-full">
+                <button class="absolute inset-y-0 right-0 p-4 flex items-center @(String.IsNullOrWhiteSpace(searchedBook) ? "hidden" : "")" @onclick="async () =>{ searchedBook = string.Empty; books = await bibleService.GetBooksWithQuery(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks, searchedBook); }">
+                    <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
+                </button>
+                <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
+                       placeholder="Book" @bind-value="@searchedBook" @bind-value:event="oninput" @onkeyup="onBookSearch" />
+            </div>
+
+            <div class="flex gap-2 w-5/12">
+                <div class="relative">
+                    <button class="absolute inset-y-0 right-0 p-4 flex items-center  @(String.IsNullOrWhiteSpace(searchedChapter) ? "hidden" : "")" @onclick="async () =>{ searchedChapter = string.Empty; }">
+                        <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
+                    </button>
+                    <input id="chapterSearch" type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
+                           placeholder="Chapter" @bind-value="@searchedChapter" @bind-value:event="oninput" @onkeyup="onChapterSearch" />
+                </div>
+
+                <button class="w-16 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20">B</button>
+            </div>
+
+        </div>
+
+        <div class="h-screen flex gap-2 overflow-hidden">
+
+            <div class="bg-gray verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
+            
+                <BookList Books="@books" SelectedBook="onSelectBook" Book="@selectedBook" >
+            
+                </BookList>
+            
+            
+            </div>
+            <div class="bg-gray verticalscroll w-5/12 h-full overflow-y-auto overflow-x-hidden scroll-smooth">
+
+
+                <ChapterList Chapters="@chapters" SelectedChapter="onSelectChapter" Chapter="@selectedChapter">
+
+                </ChapterList>
+
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="w-full flex-col hidden xl:flex overflow-auto gap-2">
+        
+
+        <div class="flex ">
+            <div class="relative w-full">
+                <button class="absolute inset-y-0 right-0 p-4 flex items-center">
+                    <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
+                </button>
+                <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
+                       placeholder="Search" />
+            </div>
+
+            <button class="w-16 ml-2 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20">B</button>
+        </div>
+
+        <div class="verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
+            <VerseList Verses="@verses">
+
+            </VerseList>
+        </div>
+
+    </div>
+
+
+
+
+    <div class="flex w-full h-10 -mt-2">
+
+
+        <BibleLanguageList Bibles="@Languages" SelectedBible="onSelectBibleLanguage" Bible="@selectedBible">
+
+        </BibleLanguageList>
+
+
+    </div>
+
+</div>
 
 @code {
+    private List<Book> books = new List<Book>();
+    private List<Chapter> chapters = new List<Chapter>();
+    private List<ArkBible> verses = new List<ArkBible>();
+    private List<Bible> Languages = new List<Bible>();
+
+    private Bible selectedBible = new Bible();
+    private Book selectedBook = new Book();
+    private Chapter selectedChapter = new Chapter();
+
+    private string searchedBook = "";
+    private string searchedChapter = "";
+    private string opacity = "opacity-0";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            opacity = "opacity-100";
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Languages = await bibleService.GetAllBiblesAsync();
+        selectedBible = (await bibleService.GetAllBiblesAsync()).FirstOrDefault();
+        books = await bibleService.GetBooks(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks);
+
+    }
+
+    private async Task onSelectBibleLanguage(Bible _bible)
+    {
+        books = await bibleService.GetBooks(_bible.Abbreviation, settingsService.AlwaysEnglishBooks);
+        selectedBible = _bible;
+        await onSelectBook(selectedBook);
+        await onSelectChapter(selectedChapter);
+    }
+
+    private async Task onBookSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Shift" || e.Key == "Control" || e.Key == "Alt") return;
+
+        searchedBook = Regex.Replace(searchedBook, @"(\d)(\p{L})", "$1 $2");
+
+        books = await bibleService.GetBooksWithQuery(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks, searchedBook);
+        if (books.Count == 1)
+        {
+            await onSelectBook(books[0]);
+            await iJSRuntime.InvokeVoidAsync("focusInput", "chapterSearch");
+        }
+    }
+
+    private async Task onChapterSearch(KeyboardEventArgs e)
+    {
+        if (!searchedChapter.All(Char.IsLetterOrDigit) || e.MetaKey || e.CtrlKey || e.ShiftKey || String.IsNullOrWhiteSpace(searchedChapter)) return;
+        searchedChapter = Regex.Replace(searchedChapter, "[^0-9.]", "");
+        int searchedChapterNumber; 
+        bool i = Int32.TryParse(searchedChapter, out searchedChapterNumber);
+        await onSelectChapter(chapters.Find(c => c.chapter == searchedChapterNumber));
+        await iJSRuntime.InvokeVoidAsync("ScrollToItem", "chapter");
+    }
+
+    private async Task onSelectBook(Book _book)
+    {
+        if (_book is null) return;
+
+        chapters.Clear();
+        chapters = await bibleService.GetChapters(selectedBible, _book.ID);
+        selectedBook = _book;
+        if (selectedChapter is not null)
+        {
+            await onSelectChapter(selectedChapter);
+        }
+    }
+
+    private async Task onSelectChapter(Chapter _chapter)
+    {
+        if (_chapter is null) return;
+        verses.Clear();
+        verses = await bibleService.GetVerses(selectedBible, selectedBook.ID, _chapter.chapter);
+        selectedChapter = _chapter;
+    }
 
 }

@@ -1,0 +1,79 @@
+﻿@if (Chapters.Count > 0)
+{
+    <div id="chapter" class="h-full -mx-[10px]" tabindex="0" @onkeydown="KeyPress">
+        <Virtualize Items="Chapters" Context="chapter" ItemSize="80" OverscanCount="50">
+             <span class="hidden h-0">
+                 @{
+                    bool isHighlighted = Chapter?.chapter == chapter?.chapter;
+                 }
+             </span>
+
+            <div class="p-4 h-20 bg-gray w-full flex select-none items-center whitespace-pre cursor-pointer group hover:text-white @(isHighlighted ? "highlighted bg-primary text-white highlighted" : "text-white_normal")"
+            @onclick="async () => { await SelectionChanged(chapter); }">
+                <p class="w-full truncate text-ellipsis overflow-hidden">@chapter.chapter</p>
+            </div>    
+        </Virtualize>
+    </div>
+}
+
+
+@code {
+    [Inject] IJSRuntime JS { get; set; }
+    private List<Chapter> chapters;
+    [Parameter] public List<Chapter> Chapters { get; set; }
+    [Parameter] public EventCallback<Chapter> SelectedChapter { get; set; }
+    [Parameter] public Chapter Chapter { get; set; } = new Chapter();
+
+    bool fromEnter;
+
+    private static ChapterList chapterList;
+    public ChapterList()
+    {
+        chapterList = this;
+    }
+
+    private int ItemCount = 0;
+    private int LastIndex = 0;
+
+
+    private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);
+
+    private async Task SelectionChanged(Chapter chapter)
+    {
+
+        Chapter = chapter;
+
+        await SelectedChapter.InvokeAsync(chapter);
+
+        LastIndex = Chapters.FindIndex(b => b.chapter == chapter.chapter);
+
+        await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
+        await ScrollToView("chapter");//
+    }
+
+    private async Task KeyPress(KeyboardEventArgs args)
+    {
+        try
+        {
+            int index = Chapters.FindIndex(c => c.chapter == Chapter.chapter);
+
+            if (args.Code == "ArrowDown") index += ((index += 1) >= Chapters.Count) ? 0 : 1;
+            else if (args.Code == "ArrowUp") index -= ((index -= 1) < 0) ? 0 : 1;
+            if (args.Code == "Enter") await JS.InvokeVoidAsync("focusInput", "chapter");
+
+            await SelectionChanged(Chapters[index]);
+
+        }
+        catch (Exception ex)
+        {
+
+        }
+    }
+
+
+    [JSInvokable]
+    public static async void JStoCSCallChapter()
+    {
+        await chapterList.SelectionChanged(chapterList.Chapters[0]);
+    }
+}

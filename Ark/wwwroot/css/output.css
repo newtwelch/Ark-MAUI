@@ -849,6 +849,10 @@ select {
   visibility: hidden;
 }
 
+.static {
+  position: static;
+}
+
 .fixed {
   position: fixed;
 }
@@ -918,6 +922,10 @@ select {
   grid-column: span 3 / span 3;
 }
 
+.m-2 {
+  margin: 0.5rem;
+}
+
 .m-4 {
   margin: 1rem;
 }
@@ -948,8 +956,12 @@ select {
   margin-top: -2.5rem;
 }
 
-.mb-16 {
-  margin-bottom: 4rem;
+.-mt-2 {
+  margin-top: -0.5rem;
+}
+
+.mb-14 {
+  margin-bottom: 3.5rem;
 }
 
 .mb-2 {
@@ -962,6 +974,10 @@ select {
 
 .mb-6 {
   margin-bottom: 1.5rem;
+}
+
+.mb-auto {
+  margin-bottom: auto;
 }
 
 .ml-2 {
@@ -1002,10 +1018,6 @@ select {
 
 .mt-\[86px\] {
   margin-top: 86px;
-}
-
-.mb-auto {
-  margin-bottom: auto;
 }
 
 .block {
@@ -1081,6 +1093,11 @@ select {
   height: 100vh;
 }
 
+.h-fit {
+  height: -moz-fit-content;
+  height: fit-content;
+}
+
 .max-h-1 {
   max-height: 0.25rem;
 }
@@ -1123,6 +1140,10 @@ select {
 
 .w-5 {
   width: 1.25rem;
+}
+
+.w-5\/12 {
+  width: 41.666667%;
 }
 
 .w-6 {
@@ -1259,10 +1280,6 @@ select {
   gap: 1.5rem;
 }
 
-.gap-10 {
-  gap: 2.5rem;
-}
-
 .space-x-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-x-reverse: 0;
   margin-right: calc(0.5rem * var(--tw-space-x-reverse));
@@ -1329,12 +1346,20 @@ select {
   text-overflow: ellipsis;
 }
 
+.whitespace-normal {
+  white-space: normal;
+}
+
 .whitespace-pre {
   white-space: pre;
 }
 
 .whitespace-pre-line {
   white-space: pre-line;
+}
+
+.break-words {
+  overflow-wrap: break-word;
 }
 
 .rounded {
@@ -1434,10 +1459,6 @@ select {
   padding: 1.5rem;
 }
 
-.p-10 {
-  padding: 2.5rem;
-}
-
 .px-0 {
   padding-left: 0px;
   padding-right: 0px;
@@ -1448,6 +1469,11 @@ select {
   padding-right: 0.125rem;
 }
 
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
 .px-4 {
   padding-left: 1rem;
   padding-right: 1rem;
@@ -1456,6 +1482,11 @@ select {
 .px-6 {
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+}
+
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
 
 .py-12 {
@@ -1529,6 +1560,10 @@ select {
 
 .font-bold {
   font-weight: 700;
+}
+
+.leading-9 {
+  line-height: 2.25rem;
 }
 
 .text-black {
@@ -2060,10 +2095,6 @@ select {
     display: none;
   }
 
-  .xl\:h-full {
-    height: 100%;
-  }
-
   .xl\:h-screen {
     height: 100vh;
   }
@@ -2084,20 +2115,12 @@ select {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .xl\:grid-rows-2 {
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-  }
-
   .xl\:flex-row {
     flex-direction: row;
   }
 
   .xl\:flex-col {
     flex-direction: column;
-  }
-
-  .xl\:justify-end {
-    justify-content: flex-end;
   }
 
   .xl\:bg-gray {

@@ -1,0 +1,45 @@
+﻿@if (Bibles.Count > 0)
+{
+    <div id="bibleLanguage" class="h-full flex overflow-x-auto flex-row space-x-2 -ml-2 items-start h-full" tabindex="0">
+        <Virtualize Items="Bibles" Context="bible">
+
+            <div class="hidden">
+                @{
+                    bool isHighlighted = Bible?.ID == bible?.ID;
+                }
+            </div>
+
+            <div class="py-2 px-4 bg-gray h-full w-full flex items-center justify-center select-none text-center whitespace-pre cursor-pointer hover:text-white @(isHighlighted ? "bg-primary text-white highlighted" : "text-white_normal")"
+            @onclick="async () => { await SelectionChanged(bible); }">
+                @bible.Language.ToUpper()
+            </div>
+        </Virtualize>
+    </div>
+}
+
+
+@code {
+    [Inject] IJSRuntime JS { get; set; }
+    [Parameter] public List<Bible> Bibles { get; set; }
+    [Parameter] public EventCallback<Bible> SelectedBible { get; set; }
+
+    [Parameter] public Bible Bible { get; set; } = new Bible();
+
+    private int ItemCount = 0;
+    private int LastIndex = 0;
+
+    private async Task ScrollToView(string id) => await JS.InvokeVoidAsync("ScrollToItem", id);
+
+    private async Task SelectionChanged(Bible bible)
+    {
+        await SelectedBible.InvokeAsync(bible);
+        Bible = bible;
+
+        LastIndex = Bibles.FindIndex(b => b.ID == Bible.ID);
+
+        await Task.Delay(1); //Delay so the right id will be selected by ScrollToView
+        await ScrollToView("bibleLanguage");//
+    }
+
+
+}

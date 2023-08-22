@@ -3,37 +3,38 @@
 @inject BibleService bibleService
 @inject SettingsService settingsService
 @inject DisplayService displayService
+@inject AppSharedState appSharedState
 @inject IJSRuntime iJSRuntime
 
 <div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50  @(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") h-screen w-screen absolute transition-opacity font-sans">
-    <Presentor BibleBook="@($"{selectedBook.Name} {selectedChapter.chapter}:{selectedVerse.Verse}")" Verse="@selectedVerse.Text" />
+    <Presentor BibleBook="@($"{selectedBook.Name} {selectedChapter.chapter}:{selectedVerse.Verse}")" Verse="@selectedVerse.Text" IsBible="true" />
 </div>
 
 <div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm mt-14 pb-[72px] xl:pb-4 xl:mt-0 xl:text-base @opacity duration-500 transition-opacity ease-out">
 
 
     <div class="w-full h-full flex flex-col overflow-auto gap-2">
-        
 
-        <div class="flex gap-2">
+
+        <div class="flex gap-2 w-full">
             <div class="relative w-full">
                 <button class="absolute inset-y-0 right-0 p-4 flex items-center @(String.IsNullOrWhiteSpace(searchedBook) ? "hidden" : "")" @onclick="async () =>{ searchedBook = string.Empty; books = await bibleService.GetBooksWithQuery(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks, searchedBook); }">
                     <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
                 </button>
                 <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
-                       placeholder="Book" @bind-value="@searchedBook" @bind-value:event="oninput" @onkeyup="onBookSearch" />
+                       placeholder="Book" @bind-value="@searchedBook" @bind-value:event="oninput" @onkeyup="onInputBook" />
             </div>
 
-            <div class="flex gap-2 w-5/12">
-                <div class="relative">
+            <div class="flex gap-2 w-3/2 xl:w-5/12">
+                <div class="relative w-full">
                     <button class="absolute inset-y-0 right-0 p-4 flex items-center  @(String.IsNullOrWhiteSpace(searchedChapter) ? "hidden" : "")" @onclick="async () =>{ searchedChapter = string.Empty; }">
                         <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
                     </button>
                     <input id="chapterSearch" type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
-                           placeholder="Chapter" @bind-value="@searchedChapter" @bind-value:event="oninput" @onkeyup="onChapterSearch" />
+                           placeholder="Chapter" @bind-value="@searchedChapter" @bind-value:event="oninput" @onkeyup="onInputChapter" />
                 </div>
 
-                <button class="w-16 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20">B</button>
+                <button class="w-10 bg-gray font-ark text-white_normal hover:text-white_light hover:bg-white_light hover:bg-opacity-20" @onclick="@(() => {verseDataHidden = false;})">B</button>
             </div>
 
         </div>
@@ -41,14 +42,14 @@
         <div class="h-screen flex gap-2 overflow-hidden">
 
             <div class="bg-gray verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
-            
-                <BookList Books="@books" SelectedBook="onSelectBook" Book="@selectedBook" >
-            
+
+                <BookList Books="@books" SelectedBook="onSelectBook" Book="@selectedBook">
+
                 </BookList>
-            
-            
+
+
             </div>
-            <div class="bg-gray verticalscroll w-5/12 h-full overflow-y-auto overflow-x-hidden scroll-smooth">
+            <div class="bg-gray verticalscroll w-1/2 xl:w-5/12 h-full overflow-y-auto overflow-x-hidden scroll-smooth">
 
 
                 <ChapterList Chapters="@chapters" SelectedChapter="onSelectChapter" Chapter="@selectedChapter">
@@ -62,29 +63,35 @@
     </div>
 
 
-    <div class="w-full flex-col hidden xl:flex overflow-auto gap-2">
-        
+    <div class="w-full h-full @(verseDataHidden ? "hidden xl:flex" : "flex") pb-16 bg-gray_darkest top-0 left-0 p-4 xl:p-0 absolute z-20 xl:static flex-col gap-2 overflow-auto ">
 
-        <div class="flex gap-2">
+
+        <div class="flex gap-2 w-full">
             <div class="relative w-10">
-                <input type="text" class="bg-gray_dark w-full p-2 h-full text-white_light border-0 focus:ring-0" spellcheck="false"
-                       placeholder="V" />
+                <input id="verseNumberSearch" type="text" class="bg-gray_dark text-center w-full p-2 h-full text-white_light border-0 focus:ring-0" spellcheck="false"
+                       placeholder="V" @bind-value="@searchedVerseNumber" @bind-value:event="oninput" @onkeyup="onInputVerseNumber" />
             </div>
 
             <div class="relative w-full">
-                <button class="absolute inset-y-0 right-0 p-4 flex items-center">
+                <button class="absolute inset-y-0 right-0 p-4 flex items-center @(String.IsNullOrWhiteSpace(searchedVerse) ? "hidden" : "")" @onclick="async () =>{ searchedVerse = string.Empty; }">
                     <svg class="w-5 h-5 fill-white_normal" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM175 175c-9.4 9.4-9.4 24.6 0 33.9l47 47-47 47c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l47-47 47 47c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-47-47 47-47c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-47 47-47-47c-9.4-9.4-24.6-9.4-33.9 0z" /></svg>
                 </button>
                 <input type="text" class="bg-gray_dark w-full p-4 text-white_light border-0 focus:ring-0" spellcheck="false"
-                       placeholder="Search" />
+                       placeholder="Search this chapter" @bind-value="@searchedVerse" @bind-value:event="oninput" @onkeyup="onInputVerse" />
             </div>
 
+            <button class="w-10 font-ark text-center bg-gray text-white_normal xl:hidden hover:opacity-75"
+            @onclick="async () => { onBack(); }">
+                b
+            </button>
         </div>
 
-        <div class="verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth">
-            <VerseList Verses="@verses" SelectedVerse="onSelectVerse">
-
+        <div class="verticalscroll w-full h-full overflow-y-auto overflow-x-hidden scroll-smooth mb-[58px]">
+            <VerseList Verses="@verses" SelectedVerse="onSelectVerse" Books="@books" IsGlobal="isGlobal" IsSearch="isSearch">
             </VerseList>
+            <span class="font-sans text-white_normal @searchingOpacity">
+                @searchingText
+            </span>
         </div>
 
     </div>
@@ -92,7 +99,7 @@
 
 
 
-    <div class="flex w-full h-10 -mt-2">
+    <div class="flex w-full h-10 -mt-2 z-20">
 
 
         <BibleLanguageList Bibles="@Languages" SelectedBible="onSelectBibleLanguage" Bible="@selectedBible">
@@ -116,9 +123,20 @@
     private ArkBible selectedVerse = new ArkBible();
 
     private bool showPresentor;
+    private bool verseDataHidden = true;
+    private bool isGlobal;
+    private bool isSearch;
     private string searchedBook = "";
     private string searchedChapter = "";
+    private string searchedVerseNumber = "";
+    private string searchedVerse = "";
     private string opacity = "opacity-0";
+    private string searchingOpacity = "opacity-0";
+    private string searchingText = "Searching...";
+
+    private System.Timers.Timer ctimer = default!;
+    private System.Timers.Timer vtimer = default!;
+    private System.Timers.Timer fVtimer = default!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -133,8 +151,36 @@
     {
         Languages = await bibleService.GetAllBiblesAsync();
         selectedBible = (await bibleService.GetAllBiblesAsync()).FirstOrDefault();
-        books = await bibleService.GetBooks(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks);
+        if (selectedBible is not null)
+            books = await bibleService.GetBooks(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks);
+
+        appSharedState.BackButtonPressed += onBack;
+
+        ctimer = new System.Timers.Timer(500);
+        ctimer.Elapsed += onChapterSearch;
+        ctimer.AutoReset = false;
+
+        vtimer = new System.Timers.Timer(500);
+        vtimer.Elapsed += onVerseNumberSearch;
+        vtimer.AutoReset = false;
+
+        int timerForFullVerseSearch = 10;
+        #if ANDROID
+    timerForFullVerseSearch = 500;
+        #endif
+        fVtimer = new System.Timers.Timer(timerForFullVerseSearch);
+        fVtimer.Elapsed += onVerseSearch;
+        fVtimer.AutoReset = false;
     }
+
+    public async void Dispose()
+    {
+        appSharedState.BackButtonPressed -= onBack;
+        ctimer.Dispose();
+        vtimer.Dispose();
+        fVtimer.Dispose();
+    }
+
 
     private async Task onSelectBibleLanguage(Bible _bible)
     {
@@ -144,45 +190,149 @@
         await onSelectChapter(selectedChapter);
     }
 
-    private async Task onBookSearch(KeyboardEventArgs e)
+    private async void onInputBook(KeyboardEventArgs e)
     {
-        if (e.Key == "Shift" || e.Key == "Control" || e.Key == "Alt" || e.Key == "Backspace") return;
-
         searchedBook = Regex.Replace(searchedBook, @"(\d)(\p{L})", "$1 $2");
-
         books = await bibleService.GetBooksWithQuery(selectedBible.Abbreviation, settingsService.AlwaysEnglishBooks, searchedBook);
-        if (books.Count == 1)
+        StateHasChanged();
+
+        if (e.Key == "Alt" || e.Key == "Control" || e.Key == "Shift" || e.Key == "Backspace" || e.Key == "Tab") return;
+
+        if (e.Key != "Enter")
         {
+            if (books.Count == 1)
+            {
+                await onSelectBook(books[0]);
+                await iJSRuntime.InvokeVoidAsync("focusInput", "chapterSearch");
+                searchedChapter = "";
+            }
+        }
+        else
+        {
+            await Task.Delay(10);
             await onSelectBook(books[0]);
             await iJSRuntime.InvokeVoidAsync("focusInput", "chapterSearch");
+            searchedChapter = "";
+            StateHasChanged();
         }
     }
-
-    private async Task onChapterSearch(KeyboardEventArgs e)
+    private async void onInputChapter(KeyboardEventArgs e)
     {
-        if (!searchedChapter.All(Char.IsLetterOrDigit) || String.IsNullOrWhiteSpace(searchedChapter)) return;
-
+        ctimer.Stop();
         searchedChapter = Regex.Replace(searchedChapter, "[^0-9.]", "");
-        int searchedChapterNumber; 
+        if (e.Key == "Enter")
+        {
+            await SearchChapter();
+            return;
+        }
+        ctimer.Start();
+    }
+    private async void onChapterSearch(Object source, System.Timers.ElapsedEventArgs e) => await SearchChapter();
+    private async Task SearchChapter()
+    {
+        int searchedChapterNumber;
         bool isNumber = Int32.TryParse(searchedChapter, out searchedChapterNumber);
         if (isNumber)
         {
             await onSelectChapter(chapters.Find(c => c.chapter == searchedChapterNumber));
-            await Task.Delay(100);
+            await Task.Delay(10);
             await iJSRuntime.InvokeVoidAsync("chapterSelect", Math.Min(searchedChapterNumber, chapters.Count));
+            await Task.Delay(100);
+            await iJSRuntime.InvokeVoidAsync("focusInput", "verseNumberSearch");
+            searchedVerseNumber = "";
         }
     }
 
+    private async void onInputVerseNumber(KeyboardEventArgs e)
+    {
+        vtimer.Stop();
+        searchedVerseNumber = Regex.Replace(searchedVerseNumber, "[^0-9.]", "");
+        if (e.Key == "Enter")
+        {
+            await SearchVerseNumber();
+            return;
+        }
+        vtimer.Start();
+    }
+    private async void onVerseNumberSearch(Object source, System.Timers.ElapsedEventArgs e) => await SearchVerseNumber();
+    private async Task SearchVerseNumber()
+    {
+        await this.InvokeAsync(async () =>
+        {
+            int searchedVerseNumberInt;
+            bool isNumber = Int32.TryParse(searchedVerseNumber, out searchedVerseNumberInt);
+            if (isNumber)
+            {
+                await onSelectVerse(verses.Find(v => v.Verse == searchedVerseNumberInt));
+                await Task.Delay(50);
+                await iJSRuntime.InvokeVoidAsync("verseSelect", Math.Min(searchedVerseNumberInt, verses.Count));
+            }
+        });
+    }
+
+
+    private async void onInputVerse(KeyboardEventArgs e)
+    {
+        fVtimer.Stop();
+        searchingOpacity = "opacity-100";
+        searchingText = "Searching...";
+        isSearch = true;
+        isGlobal = searchedVerse.StartsWith(".");                                                                                                                                                                                                                                                                                                                                                                                       
+        selectedVerse.ID = 0;
+        selectedVerse.Verse = 0;
+        selectedVerse.Text = "null";
+
+        if (String.IsNullOrWhiteSpace(searchedVerse))
+        {
+            await onSelectBook(selectedBook);
+            await onSelectChapter(selectedChapter);
+            searchingOpacity = "opacity-0";
+            StateHasChanged();
+            return;
+        }
+
+        if (!isGlobal)
+        {
+            verses = await bibleService.GetLocalVerses(selectedBible, selectedBook, selectedChapter, searchedVerse);
+            if (verses.Count == 0)
+                searchingText = "None Found";
+            else
+                searchingOpacity = "opacity-0";
+            StateHasChanged();
+            return;
+        }
+
+        fVtimer.Start();
+    }
+    private async void onVerseSearch(Object source, System.Timers.ElapsedEventArgs e) => await SearchGlobalVerse();
+    private async Task SearchGlobalVerse()
+    {
+        await this.InvokeAsync(async () =>
+        {
+            verses = await bibleService.GetGlobalVerses(selectedBible, searchedVerse.Substring(1));
+
+            if (verses.Count == 0)
+                searchingText = "None Found";
+            else
+                searchingOpacity = "opacity-0";
+            StateHasChanged();
+        });
+    }
     private async Task onSelectBook(Book _book)
     {
         if (_book is null) return;
 
         chapters = await bibleService.GetChapters(selectedBible, _book.ID);
         selectedBook = _book;
-        if (selectedChapter is not null)
-        {
-            await onSelectChapter(selectedChapter);
-        }
+
+        #if WINDOWS
+    if (selectedChapter is not null)
+    {
+    await onSelectChapter(selectedChapter);
+    }
+        #endif
+
+        searchedVerse = "";
     }
 
     private async Task onSelectChapter(Chapter _chapter)
@@ -190,16 +340,39 @@
         if (_chapter is null) return;
         verses = await bibleService.GetVerses(selectedBible, selectedBook.ID, _chapter.chapter);
         selectedChapter = _chapter;
+        searchedVerse = "";
+
+        if (_chapter.chapter != 0)
+        {
+            verseDataHidden = false;
+        }
     }
 
     private async Task onSelectVerse(ArkBible _verse)
     {
         if (_verse is null) return;
 
-        settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
+        if (isGlobal)
+        {
+            await onSelectBook(books.Find(b => b.ID == _verse.Book));
+            await onSelectChapter(chapters.Find(c => c.chapter == _verse.Chapter));
+            isGlobal = false;
+        }
+
+        if (!String.IsNullOrWhiteSpace(searchedVerse))
+        {
+            await onSelectChapter(selectedChapter);
+        }
+
 
         displayService.IsBible = true;
+        displayService.BibleVerseToDisplay = _verse.Text;
+        displayService.BibleBookInfoToDisplay = $"{selectedBook.Name} {selectedChapter.chapter}:{_verse.Verse}";
+
+        if (settingsService.BibleShowPresentor)
+        {
 #if ANDROID
+    settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
     showPresentor = true;
 #endif
 #if WINDOWS
@@ -209,8 +382,32 @@
     Application.Current.OpenWindow(settingsService.secondWindow);
     }
 #endif
-        displayService.BibleVerseToDisplay = _verse.Text;
-        displayService.BibleBookInfoToDisplay =  $"{selectedBook.Name} {selectedChapter.chapter}:{_verse.Verse}" ;
+        }
+        searchedVerse = "";
         selectedVerse = _verse;
+        await Task.Run(() => { isSearch = false; });
+        
+    }
+
+    private void onBack()
+    {
+#if WINDOWS
+    if (Application.Current.Windows.Contains(settingsService.secondWindow))
+        Application.Current.CloseWindow(settingsService.secondWindow);
+
+#endif
+        //TODO: QUIT App if already true
+        if (showPresentor)
+        {
+            settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Portrait);
+            showPresentor = false;
+            selectedVerse.Verse = 0;
+        }
+        else if(!verseDataHidden)
+        {
+            verseDataHidden = true;
+        }
+
+        StateHasChanged();
     }
 }

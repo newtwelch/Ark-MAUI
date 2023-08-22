@@ -7,12 +7,12 @@
         {
             <span class="hidden h-0">
                 @{
-                    bool isHighlighted = Verse == verse;
+                    bool isHighlighted = Verse.Item1 == verse.Item1;
                 }
             </span>
 
             <span class="cursor-pointer px-2 py-1 m-2 @(isHighlighted ? "text-orange bg-gray_darkest" : "bg-gray")" @onclick="async () => { await SelectionChanged(verse); }">
-                @verse
+                @verse.Item2
             </span>
         }
     </p>
@@ -21,19 +21,17 @@
 
 @code {
     [Inject] IJSRuntime JS { get; set; }
-    private List<string> verses;
-    [Parameter] public List<string> Verses { get; set; }
-    [Parameter] public EventCallback<string> SelectedVerse { get; set; }
-    [Parameter] public string Verse { get; set; } = "";
+    private List<Tuple<int, string>> verses;
+    [Parameter] public List<Tuple<int, string>> Verses { get; set; }
+    [Parameter] public EventCallback<Tuple<int, string>> SelectedVerse { get; set; }
+    [Parameter] public Tuple<int, string> Verse { get; set; } = new Tuple<int, string>(100, "");
 
-    bool fromEnter;
 
     protected override void OnParametersSet()
     {
         if (verses != Verses)
         {
-            if (!fromEnter)
-                Verse = "";
+            Verse = new Tuple<int, string>(100, "");
             verses = Verses;
         }
     }
@@ -47,21 +45,21 @@
     private int ItemCount = 0;
     private int LastIndex = 0;
 
-    private async Task SelectionChanged(string verse)
+    private async Task SelectionChanged(Tuple<int, string> verse)
     {
         Verse = verse;
 
         displayService.BibleVerseToDisplay = displayService.BibleVerseToDisplay.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
         displayService.BibleVerseToDisplay = displayService.BibleVerseToDisplay.Replace("</span>", "");
 
-        int startIndex = displayService.BibleVerseToDisplay.ToLower().IndexOf(verse.ToLower());
-        int endIndex = startIndex + verse.Length;
+        int startIndex = displayService.BibleVerseToDisplay.ToLower().IndexOf(verse.Item2.ToLower());
+        int endIndex = startIndex + verse.Item2.Length;
         string wrap = displayService.BibleVerseToDisplay.Substring(startIndex, endIndex - startIndex);
         wrap = displayService.BibleVerseToDisplay.Replace(wrap, "<span class=\"text-orange group-hover:text-white_light\">" + wrap + "</span>");
         displayService.BibleVerseToDisplay = wrap;
 
-        await SelectedVerse.InvokeAsync(verse);
-        LastIndex = Verses.FindIndex(v => v == verse);
+        await SelectedVerse.InvokeAsync(Verse);
+        LastIndex = Verses.FindIndex(v => v == Verse);
     }
 
     private async Task KeyPress(KeyboardEventArgs args)
@@ -85,7 +83,6 @@
                 }
                 index -= ((index -= 1) < 0) ? 0 : 1;
             }
-            if (args.Code == "Enter") await JS.InvokeVoidAsync("focusInput", "chapter");
 
 
             await SelectionChanged(Verses[index]);

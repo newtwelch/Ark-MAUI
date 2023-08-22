@@ -116,18 +116,21 @@ namespace Ark.Pages
             _selectedLyric.Text = _selectedLyric.Text.Replace("<span class=\"text-orange group-hover:text-white_light\">", "");
             _selectedLyric.Text = _selectedLyric.Text.Replace("</span>", "");
 
-            settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
 
+            if (settingsService.SongShowPresentor)
+            {
 #if ANDROID
+            settingsService.DeviceOrientation.SetDeviceOrientation(DisplayOrientation.Landscape);
             showPresentor = true;
 #endif
 #if WINDOWS
-            if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(settingsService.secondWindow))
-            {
-                settingsService.secondWindow.Page = new DisplayPage(settingsService);
-                Application.Current.OpenWindow(settingsService.secondWindow);
-            }
+                if (selectedLyric != _selectedLyric && !Application.Current.Windows.Contains(settingsService.secondWindow))
+                {
+                    settingsService.secondWindow.Page = new DisplayPage(settingsService);
+                    Application.Current.OpenWindow(settingsService.secondWindow);
+                }
 #endif
+            }
             displayService.IsBible = false;
             displayService.LyricToDisplay = _selectedLyric.Text;
             selectedLyric = _selectedLyric;

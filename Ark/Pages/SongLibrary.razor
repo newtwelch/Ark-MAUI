@@ -21,7 +21,7 @@
 </Modal>
 
 <div class="@(showPresentor ? " opacity-100" : "opacity-0 pointer-events-none") top-0 left-0 z-50  @(settingsService.TrueBlackBackground ? "bg-black" : "bg-gray_darkest") h-screen w-screen absolute transition-opacity font-sans">
-    <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" />
+    <Presentor Lyric="@selectedLyricText" Next="right" Previous="left" IsBible="false" />
 </div>
 
 <div class="grid h-full gap-4 xl:grid-cols-2 p-4 text-sm xl:text-base @opacity duration-500 transition-opacity ease-out">

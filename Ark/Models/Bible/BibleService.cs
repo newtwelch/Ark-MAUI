@@ -29,7 +29,7 @@ namespace Ark.Models.Bible
                 return;
 
 
-            await _dbConnection.ExecuteAsync($"CREATE TABLE IF NOT EXISTS {_bible.Abbreviation} (ID INTEGER NOT NULL, Book INTEGER NOT NULL, Chapter INTEGER NOT NULL, Verse INTEGER NOT NULL, Text TEXT NOT NULL, PRIMARY KEY(ID AUTOINCREMENT))");
+            await _dbConnection.ExecuteAsync($"CREATE VIRTUAL TABLE IF NOT EXISTS {_bible.Abbreviation} USING Fts5(Book, Chapter, Verse, Text)");
             await _dbConnection.ExecuteAsync($"CREATE TABLE IF NOT EXISTS {_bible.Abbreviation}Books (ID INTEGER NOT NULL, Name TEXT NOT NULL)");
             await _dbConnection.InsertAsync(_bible);
 
@@ -41,7 +41,10 @@ namespace Ark.Models.Bible
                     {
                         foreach (var verse in chapter.Verses)
                         {
-                            t.Execute($"INSERT INTO {_bible.Abbreviation} (Book, Chapter, Verse, Text) VALUES (?, ?, ?, ?)", book.nr, verse.chapter, verse.verse, verse.Text);
+                            if (book.nr <= 66)
+                            {
+                                t.Execute($"INSERT INTO {_bible.Abbreviation} (Book, Chapter, Verse, Text) VALUES (?, ?, ?, ?)", book.nr, verse.chapter, verse.verse, verse.Text);
+                            }
                         }
                     }
                 }
@@ -52,8 +55,11 @@ namespace Ark.Models.Bible
                 var books = new List<Book>();
                 foreach (var book in _bible.Books)
                 {
-                    books.Add(book);
-                    t.Execute($"INSERT INTO {_bible.Abbreviation}Books (ID, Name) VALUES (?, ?)", book.nr, book.Name);
+                    if (book.nr <= 66)
+                    {
+                        books.Add(book);
+                        t.Execute($"INSERT INTO {_bible.Abbreviation}Books (ID, Name) VALUES (?, ?)", book.nr, book.Name);
+                    }
                 }
                 t.Commit();
             });
@@ -65,7 +71,7 @@ namespace Ark.Models.Bible
             var books = new List<Book>();
 
             if (useEnglish)
-                books = await _dbConnection.QueryAsync<Book>("SELECT * FROM akjvBooks");
+                books = await _dbConnection.QueryAsync<Book>("SELECT * FROM kjvaBooks");
             else
                 books = await _dbConnection.QueryAsync<Book>($"SELECT * FROM {_bible}Books");
 
@@ -113,8 +119,29 @@ namespace Ark.Models.Bible
 
             return chapters;
         }
+        public async Task<List<ArkBible>> GetGlobalVerses(Bible bible, string searchTerm)
+        {
+            var chapters = new List<ArkBible>();
+
+            searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
+            chapters = await _dbConnection.QueryAsync<ArkBible>($"SELECT Book, Chapter, Verse, highlight({bible.Abbreviation}, 3, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Text FROM {bible.Abbreviation} WHERE Text MATCH '\"{searchTerm}\"*'");
+
+            return chapters;
+        }
+
+        public async Task<List<ArkBible>> GetLocalVerses(Bible bible, Book book, Chapter chapter, string searchTerm)
+        {
+            var chapters = new List<ArkBible>();
+
+            searchTerm = searchTerm.Trim().Replace("'", " ").Replace(" ", "* ");
+            chapters = await _dbConnection.QueryAsync<ArkBible>($"SELECT Book, Chapter, Verse, highlight({bible.Abbreviation}, 3, '<span class=\"text-orange group-hover:text-white_light\">', '</span>') AS Text FROM {bible.Abbreviation} WHERE Text MATCH '\"{searchTerm}\"*' AND Book = {book.ID} AND Chapter = {chapter.chapter}");
+
+            return chapters;
+        }
 
         public async Task<List<Bible>> GetAllBiblesAsync() => await _dbConnection.GetAllWithChildrenAsync<Bible>();
+
+        
 
         public async Task RemoveBibleAsync(string _bible)
         {

@@ -19,8 +19,6 @@ namespace Ark.Models
         // ( Mobile ) Auto landscape                 : TRUE
         // 
 
-        // Use true black background on Projector    : TRUE
-
         private string chosenMonitor;
         public string ChosenMonitor
         {
@@ -43,6 +41,30 @@ namespace Ark.Models
             get { return trueBlackBackground; }
             set { trueBlackBackground = value; }
         }
+
+        private bool bibleShowPresentor;
+        public bool BibleShowPresentor
+        {
+            get { return bibleShowPresentor; }
+            set { bibleShowPresentor = value; }
+        }
+
+        private bool songShowPresentor;
+        public bool SongShowPresentor
+        {
+            get { return songShowPresentor; }
+            set { songShowPresentor = value; }
+        }
+
+        private bool displayBlankInsteadOfClose;
+        public bool DisplayBlankInsteadOfClose
+        {
+            get { return displayBlankInsteadOfClose; }
+            set { displayBlankInsteadOfClose = value; }
+        }
+
+
+
 
         public SettingsService()
         {

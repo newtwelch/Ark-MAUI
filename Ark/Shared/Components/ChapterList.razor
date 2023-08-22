@@ -1,7 +1,7 @@
 ﻿@if (Chapters.Count > 0)
 {
     <div id="chapter" class="h-full -mx-[10px]" tabindex="0" @onkeydown="KeyPress">
-        <Virtualize Items="Chapters" Context="chapter" ItemSize="80" OverscanCount="50">
+        <Virtualize Items="Chapters" Context="chapter" ItemSize="80" OverscanCount="170">
              <span class="hidden h-0">
                  @{
                     bool isHighlighted = Chapter?.chapter == chapter?.chapter;

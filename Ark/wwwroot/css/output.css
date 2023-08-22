@@ -940,11 +940,6 @@ select {
   margin-right: auto;
 }
 
-.my-10 {
-  margin-top: 2.5rem;
-  margin-bottom: 2.5rem;
-}
-
 .-mb-2 {
   margin-bottom: -0.5rem;
 }
@@ -965,10 +960,6 @@ select {
   margin-top: -0.5rem;
 }
 
-.-mt-20 {
-  margin-top: -5rem;
-}
-
 .mb-14 {
   margin-bottom: 3.5rem;
 }
@@ -983,6 +974,10 @@ select {
 
 .mb-6 {
   margin-bottom: 1.5rem;
+}
+
+.mb-\[58px\] {
+  margin-bottom: 58px;
 }
 
 .mb-auto {
@@ -1138,16 +1133,16 @@ select {
   width: 4rem;
 }
 
+.w-32 {
+  width: 8rem;
+}
+
 .w-4 {
   width: 1rem;
 }
 
 .w-5 {
   width: 1.25rem;
-}
-
-.w-5\/12 {
-  width: 41.666667%;
 }
 
 .w-6 {
@@ -1507,6 +1502,10 @@ select {
 .py-8 {
   padding-top: 2rem;
   padding-bottom: 2rem;
+}
+
+.pb-16 {
+  padding-bottom: 4rem;
 }
 
 .pb-\[72px\] {
@@ -2105,6 +2104,10 @@ select {
 
   .xl\:w-14 {
     width: 3.5rem;
+  }
+
+  .xl\:w-5\/12 {
+    width: 41.666667%;
   }
 
   .xl\:grid-cols-2 {

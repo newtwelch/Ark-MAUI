@@ -1,7 +1,7 @@
 ﻿@if (Books.Count > 0)
 {
     <div id="book" class="h-full -mx-[10px]" tabindex="0" @onkeydown="KeyPress">
-        <Virtualize Items="Books" Context="book" ItemSize="80">
+        <Virtualize Items="Books" Context="book" ItemSize="80" OverscanCount="70">
             <span class="hidden h-0">
                 @{
                     bool isHighlighted = Book?.ID == book?.ID;

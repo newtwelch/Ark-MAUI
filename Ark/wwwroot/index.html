@@ -36,14 +36,12 @@
         window.resetInnerHTML = (id, innerString, optionalBible) => {
             if (document.getElementById(id) !== null) {
                 document.getElementById(id).innerHTML = "";
-                if (optionalBible !== null) {
+                if (optionalBible != null) {
                     document.getElementById(id).appendChild(stringToHTML(optionalBible).firstChild);
                 }
                 document.getElementById(id).classList.remove("opacity-100");
                 document.getElementById(id).classList.add("opacity-0");
                 document.getElementById(id).appendChild(stringToHTML(innerString).firstChild);
-                console.log("heeey");
-                console.log(stringToHTML(innerString).firstChild);
                 document.getElementById(id).removeAttribute("textFitted");
                 document.getElementById(id).removeAttribute("style");
             }
@@ -60,10 +58,8 @@
                 var Type = document.getElementById(id);
                 var selected = Type.getElementsByClassName("highlighted")[0];
                 selected?.scrollIntoView({ block: "center", behavior: 'smooth' });
-                console.log(id);
-                console.log(selected);
+                selected.focus();
             } catch (err) {
-                console.log(err);
             }
         }
 
@@ -75,6 +71,11 @@
 
         function chapterSelect(chapter) {
             DotNet.invokeMethodAsync('Ark', 'JStoCSCallchapter', chapter-1);
+        }
+        function verseSelect(verse) {
+            DotNet.invokeMethodAsync('Ark', 'JStoCSCallverse', verse - 1);
+            var Type = document.getElementById('verse');
+            Type.focus();
         }
 
         function nextVerse(moveBack) {

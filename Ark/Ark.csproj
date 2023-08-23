@@ -16,13 +16,13 @@
         <ApplicationTitle>Ark</ApplicationTitle>
 
         <!-- App Identifier -->
-        <ApplicationId>com.companyname.ark</ApplicationId>
+        <ApplicationId>com.welchengine.ark</ApplicationId>
         <ApplicationIdGuid>D5BDAD9C-3C82-404C-8A2A-2B59CFFD0090</ApplicationIdGuid>
 
         <!-- Versions -->
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <ApplicationVersion>1</ApplicationVersion>
-
+		
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">14.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>

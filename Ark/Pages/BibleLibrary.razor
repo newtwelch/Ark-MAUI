@@ -173,7 +173,7 @@
         fVtimer.AutoReset = false;
     }
 
-    public async void Dispose()
+    public void Dispose()
     {
         appSharedState.BackButtonPressed -= onBack;
         ctimer.Dispose();
@@ -346,6 +346,7 @@
         {
             verseDataHidden = false;
         }
+
     }
 
     private async Task onSelectVerse(ArkBible _verse)
@@ -386,7 +387,6 @@
         searchedVerse = "";
         selectedVerse = _verse;
         await Task.Run(() => { isSearch = false; });
-        
     }
 
     private void onBack()

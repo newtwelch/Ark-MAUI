@@ -83,7 +83,7 @@ namespace Ark.Models.Bible
             var books = new List<Book>();
 
             if (useEnglish)
-                books = await _dbConnection.QueryAsync<Book>($"SELECT * FROM akjvBooks WHERE Name LIKE '%{searchTerm}%'");
+                books = await _dbConnection.QueryAsync<Book>($"SELECT * FROM kjvaBooks WHERE Name LIKE '%{searchTerm}%'");
             else
                 books = await _dbConnection.QueryAsync<Book>($"SELECT * FROM {_bible}Books WHERE Name LIKE '%{searchTerm}%'");
 
@@ -140,8 +140,6 @@ namespace Ark.Models.Bible
         }
 
         public async Task<List<Bible>> GetAllBiblesAsync() => await _dbConnection.GetAllWithChildrenAsync<Bible>();
-
-        
 
         public async Task RemoveBibleAsync(string _bible)
         {
